@@ -2,10 +2,10 @@ import { createClient } from '@/lib/server';
 import VideoPlayer from '@/components/videoPlayer';
 
 const chapters = [
-  { time: 0, title: 'Introduction' },
-  { time: 60, title: 'Basics of Topic' },
-  { time: 180, title: 'Advanced Techniques' },
-  { time: 300, title: 'Summary' },
+  { time: 0, label: "Introduction" },
+  { time: 30, label: "Overview" },
+  { time: 120, label: "Deep Dive" },
+  { time: 240, label: "Conclusion" },
 ];
 
 export default async function TopicDetailsPage({ params }: { params: Promise<{ topicId: string }> }) {
