@@ -7,7 +7,9 @@ export async function getQuestionsByTopic(topicId: String) {
         .from('questions')
         .select(`
             id,
+            topic_id,
             question_text,
+            allow_multiple,
             answers (
                 id,
                 answer_text,
