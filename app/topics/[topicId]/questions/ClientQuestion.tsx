@@ -25,22 +25,16 @@ type ClientQuestionProps = {
 
 export default function ClientQuestion({ questions }: ClientQuestionProps) {
     const [selectedAnswers, setSelectedAnswers] = useState<SelectedAnswers>({});
+    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 
-    const topicId = questions[0]?.topic_id || "Unknown Topic";
-
-    const handleSingleSelect = (questionId: number, answerIndex: number) => {
-        setSelectedAnswers((prev: SelectedAnswers) => ({
-            ...prev,
-            [questionId]: [answerIndex],
-        }));
-    };
-
-    const handleMultipleSelect = (questionId: number, answerIndex: number) => {
+    const handleAnswerSelect = (questionId: number, answerIndex: number, allowMultiple: boolean) => {
         setSelectedAnswers((prev: SelectedAnswers) => {
             const currentAnswers = prev[questionId] || [];
-            const updatedAnswers = currentAnswers.includes(answerIndex)
-                ? currentAnswers.filter((i) => i !== answerIndex)
-                : [...currentAnswers, answerIndex];
+            const updatedAnswers = allowMultiple
+                ? currentAnswers.includes(answerIndex)
+                    ? currentAnswers.filter((i) => i !== answerIndex)
+                    : [...currentAnswers, answerIndex]
+                : [answerIndex];
 
             return {
                 ...prev,
@@ -49,37 +43,55 @@ export default function ClientQuestion({ questions }: ClientQuestionProps) {
         });
     };
 
+    const handlePrevious = () => {
+        if (currentQuestionIndex > 0) {
+            setCurrentQuestionIndex(currentQuestionIndex - 1);
+        }
+    }
+
+    const handleNext = () => {
+        if (currentQuestionIndex < questions.length - 1) {
+            setCurrentQuestionIndex(currentQuestionIndex + 1);
+        }
+    }
+
+    const currentQuestion = questions[currentQuestionIndex];
+
     return (
         <div>
-            {questions.length > 0 ? (
-                questions.map((question) => (
-                    <div key={question.id}>
-                        <fieldset>
-                            <legend>{question.question_text}</legend>
-                            {question.answers.map((answer, index) => (
-                                <label key={index} style={{ display: 'block', margin: '5px 0', cursor: 'pointer', }}>
-                                    <input
-                                        type={question.allow_multiple ? 'checkbox' : 'radio'}
-                                        name={`question.${question.id}`}
-                                        value={index}
-                                        checked={
-                                            question.allow_multiple
-                                                ? selectedAnswers[question.id]?.includes(index)
-                                                : selectedAnswers[question.id]?.[0] === index}
-                                        onChange={() => 
-                                            question.allow_multiple
-                                                ? handleMultipleSelect(question.id, index)
-                                                : handleSingleSelect(question.id, index)}
-                                    />
-                                    {answer.answer_text}
-                                </label>
-                            ))}
-                        </fieldset>
-                    </div>
-                ))
-            ) : (
-                <p>No questions available.</p>
-            )}
+            <fieldset>
+                <legend>{currentQuestion.question_text}</legend>
+                {currentQuestion.answers.map((answer, index) => (
+                    <label key={index} style={{ display: 'block', margin: '5px 0', cursor: 'pointer', }}>
+                        <input
+                            type={currentQuestion.allow_multiple ? 'checkbox' : 'radio'}
+                            name={`question-${currentQuestion.id}`}
+                            value={index}
+                            checked={
+                                currentQuestion.allow_multiple
+                                    ? selectedAnswers[currentQuestion.id]?.includes(index)
+                                    : selectedAnswers[currentQuestion.id]?.[0] === index}
+                            onChange={() =>
+                                handleAnswerSelect(
+                                    currentQuestion.id,
+                                    index,
+                                    currentQuestion.allow_multiple,
+                                )
+                            }
+                        />
+                        {answer.answer_text}
+                    </label>
+                ))}
+            </fieldset>
+            <div>
+                <button onClick={handlePrevious} disabled={currentQuestionIndex === 0}>
+                    previous
+                </button>
+                <button onClick={handleNext} disabled={currentQuestionIndex === questions.length - 1}>
+                    Next
+                </button>
+            </div>
         </div>
+
     );
 }
