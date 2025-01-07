@@ -16,7 +16,7 @@ export default async function TopicsPage() {
             <div>
                 {topics?.map((topic) => (
                     <Link key={topic.id} href={`./topics/${topic.id}`} passHref>
-                        <div>
+                        <div className='card'>
                             <h2>{topic.title}</h2>
                             <p>{topic.description}</p>
                         </div>
