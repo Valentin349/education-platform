@@ -6,5 +6,5 @@ export default async function QuizPage({ params }: { params: Promise<{ topicId: 
     const topicId = (await params).topicId;
     const questions = await getQuestionsByTopic(topicId);
 
-    return <ClientQuestion questions={questions}/>;
+    return <ClientQuestion questions={questions} topicId={topicId}/>;
 };

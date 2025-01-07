@@ -1,4 +1,5 @@
 "use client"
+import Link from "next/link";
 import { useState } from "react";
 
 type SelectedAnswers = {
@@ -21,9 +22,10 @@ type Answer = {
 
 type ClientQuestionProps = {
     questions: Question[];
+    topicId: string;
 };
 
-export default function ClientQuestion({ questions }: ClientQuestionProps) {
+export default function ClientQuestion({ questions, topicId }: ClientQuestionProps) {
     const [selectedAnswers, setSelectedAnswers] = useState<SelectedAnswers>({});
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 
@@ -91,6 +93,10 @@ export default function ClientQuestion({ questions }: ClientQuestionProps) {
                     Next
                 </button>
             </div>
+
+            <Link href={`/topics/${topicId}`}>
+                Leave Quiz
+            </Link>
         </div>
 
     );

@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/server';
+import Link from 'next/link';
 
 export default async function TopicsPage() {
     const supabase = await createClient();
@@ -12,14 +13,16 @@ export default async function TopicsPage() {
     return (
         <div>
             <h1>Topics</h1>
-            <ul>
+            <div>
                 {topics?.map((topic) => (
-                    <li key={topic.id}>
-                        <h2>{topic.title}</h2>
-                        <p>{topic.description}</p>
-                    </li>
+                    <Link key={topic.id} href={`./topics/${topic.id}`} passHref>
+                        <div>
+                            <h2>{topic.title}</h2>
+                            <p>{topic.description}</p>
+                        </div>
+                    </Link>
                 ))}
-            </ul>
+            </div>
         </div>
     );
 }
