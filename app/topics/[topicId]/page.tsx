@@ -1,6 +1,6 @@
 import VideoPlayer from '@/components/videoPlayer';
 import Link from 'next/link';
-import { getTopicById } from '@/lib/topics';
+import { getTopicById } from '@/lib/topics.server';
 
 const chapters = [
 	{ time: 0, label: "Introduction" },

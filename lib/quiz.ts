@@ -1,4 +1,4 @@
-import { createClient } from "./server";
+import { createClient } from "./supabase/server";
 
 export async function getQuestionsByTopic(topicId: String) {
     const supabase = await createClient();

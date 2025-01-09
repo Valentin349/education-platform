@@ -1,16 +1,4 @@
-import { createClient } from "./server";
-
-export async function createTopic(title: string, description: string, videoUrl: string) {
-    const supabase = await createClient();
-
-    const { data, error } = await supabase
-        .from('topics')
-        .insert([{ title, description, video_url: videoUrl }]);
-
-    if (error) throw new Error(error.message);
-
-    return data;
-}
+import { createClient } from "./supabase/server" ;
 
 export async function getAllTopics() {
     const supabase = await createClient();
