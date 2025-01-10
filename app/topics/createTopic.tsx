@@ -10,48 +10,42 @@ export default function CreateTopic() {
         description: '',
         video: '',
     });
-    const [error, setError] = useState<string | null>(null);
-    const [success, setSuccess] = useState<string | null>(null);
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isLoading, setLoading] = useState(true);
 
-    const handleSumbit = async (event: React.FormEvent) => {
-        event.preventDefault();
-        setError(null);
-        setSuccess(null);
+    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = event.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
 
-        setIsSubmitting(true);
+    const handleSumbit = async () => {
+        if (!formData.title || !formData.description || !formData.video) {
+            alert('Please fill in all fields');
+            return;
+        }
+
         try {
+            setLoading(true);
+
             await createTopic(formData.title, formData.description, formData.video);
-            setSuccess('Successfully created topic');
+            alert('Successfully created topic');
             setFormData({ title: '', description: '', video: '' });
         } catch (err: any) {
-            setError(err.message || 'An error occurred while creating the topic.');
+            alert(err.message || 'An error occurred while creating the topic.');
         } finally {
-            setIsSubmitting(false);
+            setLoading(false);
         }
     }
-
-    const validateForm = () => {
-        const { title, description, video } = formData;
-    
-        if (!title.trim()) return 'Title is required.';
-        if (!description.trim()) return 'Description is required.';
-        if (!video.trim()) return 'Video URL is required.';
-    
-        const urlRegex = /^(http|https):\/\/[^ "]+$/;
-        if (!urlRegex.test(video)) return 'Please enter a valid Video URL.';
-    
-        return null;
-      };
 
     return (
         <RoleBasedView allowedRoles={['teacher']}>
             <div>
                 <form>
-                    <input type="text" name="title" placeholder="Topic Title" value={formData.title} />
-                    <input type="text" name="description" placeholder="Description" value={formData.description} />
-                    <input type="text" name="video" placeholder="Video URL" value={formData.video} />
-                    <button type="submit">Create</button>
+                    <input type="text" name="title" placeholder="Topic Title" value={formData.title} onChange={handleChange} />
+                    <input type="text" name="description" placeholder="Description" value={formData.description} onChange={handleChange} />
+                    <input type="text" name="video" placeholder="Video URL" value={formData.video} onChange={handleChange} />
+                    <button onClick={handleSumbit}>
+                        {isLoading ? 'Loading...' : 'Create'}
+                    </button>
                 </form>
             </div>
         </RoleBasedView>
