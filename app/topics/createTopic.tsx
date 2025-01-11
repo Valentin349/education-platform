@@ -43,7 +43,7 @@ export default function CreateTopic() {
                     <input type="text" name="title" placeholder="Topic Title" value={formData.title} onChange={handleChange} />
                     <input type="text" name="description" placeholder="Description" value={formData.description} onChange={handleChange} />
                     <input type="text" name="video" placeholder="Video URL" value={formData.video} onChange={handleChange} />
-                    <button onClick={handleSumbit}>
+                    <button type="button" onClick={handleSumbit}>
                         {isLoading ? 'Loading...' : 'Create'}
                     </button>
                 </form>

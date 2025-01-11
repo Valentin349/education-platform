@@ -18,7 +18,7 @@ export default function CreateQuestion({ topicId }: CreateQuestionProps) {
 
     const [isLoading, setLoading] = useState<boolean>(false);
 
-    const handleSumbit = async () => {
+    const handleSubmit = async () => {
         if (!questionText) {
             alert('Please write a quesiton');
             return;
@@ -27,10 +27,10 @@ export default function CreateQuestion({ topicId }: CreateQuestionProps) {
         const hasCorrectAnswer = answers.some(answers => answers.is_correct);
         if (!hasCorrectAnswer) {
             alert('You need at least one correct answer');
+            return;
         }
 
         const allowMultiple = answers.filter(answer => answer.is_correct).length > 1;
-
 
         try {
             setLoading(true);
@@ -97,7 +97,7 @@ export default function CreateQuestion({ topicId }: CreateQuestionProps) {
                         Add Answer
                     </button>
 
-                    <button onClick={handleSumbit}>
+                    <button type="button" onClick={handleSubmit}>
                         {isLoading ? 'Loading...' : 'Create'}
                     </button>
                 </form>
