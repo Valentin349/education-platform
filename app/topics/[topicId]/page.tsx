@@ -24,7 +24,7 @@ export default async function TopicDetailsPage({ params }: { params: Promise<{ t
 				<p>{topic.description}</p>
 				<VideoPlayer videoUrl={topic.video_url} chapters={chapters} />
 				{user.role === 'teacher' && (
-					<CreateQuestion />
+					<CreateQuestion topicId={topicId}/>
 				)}
 				<div>
 					<Link href={'/topics'}>Topics</Link>

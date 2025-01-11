@@ -1,14 +1,28 @@
 import { createClient } from "./supabase/client";
 import { BaseAnswer } from "./types";
 
-export async function createQuestion(question_text: string, allow_multiple: boolean, answers: BaseAnswer[]) {
+export async function createQuestion(
+    topic_id: string, question_text: string, allow_multiple: boolean, answers: BaseAnswer[]
+): Promise<void> {
     const supabase = createClient();
 
-    const { data, error } = await supabase
+    const { data: question, error: questionError } = await supabase
         .from('questions')
-        .insert([{ question_text, allow_multiple, answers }]);
+        .insert([{ topic_id, question_text, allow_multiple }])
+        .select('id')
+        .single();
 
-    if (error) throw new Error(error.message);
+    if (questionError) throw new Error(`Error inserting question: ${questionError.message}`);
 
-    return data;
+    const answersWithQuestionId = answers.map((answer) => ({
+        ...answer,
+        question_id: question.id
+    }))
+
+    const { error: answersError } = await supabase
+        .from('answers')
+        .insert(answersWithQuestionId);
+
+    if (answersError) throw new Error(`Error inserting answers: ${answersError.message}`)
+
 }

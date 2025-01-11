@@ -5,7 +5,11 @@ import { useState } from "react"
 import { createQuestion } from "@/lib/questions.client";
 import { BaseAnswer } from "@/lib/types";
 
-export default function CreateQuestion() {
+type CreateQuestionProps = {
+    topicId: string;
+}
+
+export default function CreateQuestion({ topicId }: CreateQuestionProps) {
     const [questionText, setQuestionText] = useState<string>('');
     const [answers, setAnswers] = useState<BaseAnswer[]>([
         { answer_text: '', is_correct: false },
@@ -31,7 +35,7 @@ export default function CreateQuestion() {
         try {
             setLoading(true);
 
-            await createQuestion(questionText, allowMultiple, answers);
+            await createQuestion(topicId, questionText, allowMultiple, answers);
             alert('successfully created quetsion');
             setQuestionText('');
             setAnswers([
