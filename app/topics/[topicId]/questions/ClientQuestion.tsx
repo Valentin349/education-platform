@@ -1,24 +1,11 @@
 "use client"
+import { Question } from "@/lib/types";
 import Link from "next/link";
 import { useState } from "react";
 
 type SelectedAnswers = {
     [questionId: number]: number[];
 };
-
-type Question = {
-    id: number;
-    topic_id: number;
-    question_text: string;
-    allow_multiple: boolean;
-    answers: Answer[];
-};
-
-type Answer = {
-    id: number;
-    answer_text: string;
-    is_correct?: boolean;
-}
 
 type ClientQuestionProps = {
     questions: Question[];

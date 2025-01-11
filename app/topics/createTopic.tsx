@@ -10,7 +10,7 @@ export default function CreateTopic() {
         description: '',
         video: '',
     });
-    const [isLoading, setLoading] = useState(true);
+    const [isLoading, setLoading] = useState(false);
 
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = event.target;

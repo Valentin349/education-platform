@@ -1,5 +1,5 @@
-import { getQuestionsByTopic } from "@/lib/quiz";
-import ClientQuestion from "./ClientQuestion";
+import { getQuestionsByTopic } from "@/lib/questions.server";
+import ClientQuestion from "./clientQuestion";
 import { notFound } from "next/navigation";
 
 
