@@ -1,4 +1,5 @@
 "use client"
+import { getCurrentUser } from "@/lib/mockUsers";
 import { Question } from "@/lib/types";
 import Link from "next/link";
 import { useState } from "react";
@@ -14,7 +15,12 @@ type ClientQuestionProps = {
 
 export default function ClientQuestion({ questions, topicId }: ClientQuestionProps) {
     const [selectedAnswers, setSelectedAnswers] = useState<SelectedAnswers>({});
-    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+    const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
+
+    const currentQuestion = questions[currentQuestionIndex];
+    const [editableQuestion, setEditableQuestion] = useState<string>(currentQuestion.question_text);
+
+    const user = getCurrentUser();
 
     const handleAnswerSelect = (questionId: number, answerIndex: number, allowMultiple: boolean) => {
         setSelectedAnswers((prev: SelectedAnswers) => {
@@ -32,6 +38,14 @@ export default function ClientQuestion({ questions, topicId }: ClientQuestionPro
         });
     };
 
+    const handleUpdateQuestion = async (questionId: number) => {
+        // implement supabase UPDATE 
+    }
+
+    const handleRemoveQuestion = async (questionId: number) => {
+        // implement supabase REMOVE 
+    }
+
     const handlePrevious = () => {
         if (currentQuestionIndex > 0) {
             setCurrentQuestionIndex(currentQuestionIndex - 1);
@@ -44,12 +58,20 @@ export default function ClientQuestion({ questions, topicId }: ClientQuestionPro
         }
     }
 
-    const currentQuestion = questions[currentQuestionIndex];
+
+
 
     return (
         <div>
             <fieldset>
-                <legend>{currentQuestion.question_text}</legend>
+                <legend>
+                    {user.role === 'teacher' ? (
+                        <input type="text" value={editableQuestion} onChange={(e) => setEditableQuestion(e.target.value)} />
+                    ) : (
+                        currentQuestion.question_text
+                    )}
+                </legend>
+
                 {currentQuestion.answers.map((answer, index) => (
                     <label key={index} style={{ display: 'block', margin: '5px 0', cursor: 'pointer', }}>
                         <input
@@ -72,6 +94,7 @@ export default function ClientQuestion({ questions, topicId }: ClientQuestionPro
                     </label>
                 ))}
             </fieldset>
+
             <div>
                 <button onClick={handlePrevious} disabled={currentQuestionIndex === 0}>
                     previous
@@ -79,6 +102,18 @@ export default function ClientQuestion({ questions, topicId }: ClientQuestionPro
                 <button onClick={handleNext} disabled={currentQuestionIndex === questions.length - 1}>
                     Next
                 </button>
+
+                {user.role === 'teacher' && (
+                    <div>
+                        <button onClick={() => handleUpdateQuestion(currentQuestion.id)}>
+                            Update Question
+                        </button>
+
+                        <button onClick={() => handleRemoveQuestion(currentQuestion.id)}>
+                            remove question
+                        </button>
+                    </div>
+                )}
             </div>
 
             <Link href={`/topics/${topicId}`}>
