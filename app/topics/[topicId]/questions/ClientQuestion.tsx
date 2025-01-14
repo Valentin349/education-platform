@@ -3,6 +3,7 @@ import { getCurrentUser } from "@/lib/mockUsers";
 import { BaseAnswer, Question, StoredAnswer } from "@/lib/types";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 type SelectedAnswers = {
     [questionId: number]: number[];
@@ -44,11 +45,30 @@ export default function ClientQuestion({ questions, topicId }: ClientQuestionPro
     };
 
     const handleUpdateQuestion = async (questionId: number) => {
-        // implement supabase UPDATE 
+        // TODO abstract function
+        const supabase = createClient();
+        try {
+            const { error: questionError } = await supabase
+                .from("questions")
+                .update({ question_text: editableQuestion })
+                .eq("id", questionId);
+    
+            if (questionError) {
+                throw new Error(`Error updating question: ${questionError.message}`);
+            }
+
+            // TODO add upsert existing answers that have an ID answers
+
+
+            // TODO Insert answers that dont have ID
+        }   catch (error: any) {
+            alert(error.message || "An error occurred while updating the question.");
+        }
+
     }
 
     const handleRemoveQuestion = async (questionId: number) => {
-        // implement supabase REMOVE 
+        // TODO implement supabase REMOVE 
     }
 
     const handlePrevious = () => {
