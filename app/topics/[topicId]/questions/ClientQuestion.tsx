@@ -2,7 +2,7 @@
 import { getCurrentUser } from "@/lib/mockUsers";
 import { BaseAnswer, Question, StoredAnswer } from "@/lib/types";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type SelectedAnswers = {
     [questionId: number]: number[];
@@ -16,11 +16,14 @@ type ClientQuestionProps = {
 export default function ClientQuestion({ questions, topicId }: ClientQuestionProps) {
     const [selectedAnswers, setSelectedAnswers] = useState<SelectedAnswers>({});
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
+    const [editableQuestion, setEditableQuestion] = useState<string>('');
+    const [editableAnswers, setEditableAnswers] = useState<BaseAnswer[]>([]);
 
-    const currentQuestion = questions[currentQuestionIndex];
-    console.log(currentQuestion);
-    const [editableQuestion, setEditableQuestion] = useState<string>(currentQuestion.question_text);
-    const [editableAnswers, setEditableAnswers] = useState<BaseAnswer[]>(currentQuestion.answers);
+    useEffect(() => {
+        const currentQuestion = questions[currentQuestionIndex];
+        setEditableQuestion(currentQuestion.question_text);
+        setEditableAnswers(currentQuestion.answers);
+    }, [currentQuestionIndex, questions])
 
     const user = getCurrentUser();
 
@@ -51,16 +54,12 @@ export default function ClientQuestion({ questions, topicId }: ClientQuestionPro
     const handlePrevious = () => {
         if (currentQuestionIndex > 0) {
             setCurrentQuestionIndex(currentQuestionIndex - 1);
-            //setEditableQuestion(currentQuestion.question_text);
-            //setEditableAnswers(currentQuestion.answers);
         }
     }
 
     const handleNext = () => {
         if (currentQuestionIndex < questions.length - 1) {
             setCurrentQuestionIndex(currentQuestionIndex + 1);
-            //setEditableQuestion(currentQuestion.question_text);
-            //setEditableAnswers(currentQuestion.answers);
         }
     }
 
@@ -72,6 +71,7 @@ export default function ClientQuestion({ questions, topicId }: ClientQuestionPro
         );
     }
 
+    const currentQuestion = questions[currentQuestionIndex];
     return (
         <div>
             <fieldset>
