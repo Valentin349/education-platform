@@ -1,6 +1,6 @@
 "use client"
 import { getCurrentUser } from "@/lib/mockUsers";
-import { Question } from "@/lib/types";
+import { BaseAnswer, Question, StoredAnswer } from "@/lib/types";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -18,7 +18,9 @@ export default function ClientQuestion({ questions, topicId }: ClientQuestionPro
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
 
     const currentQuestion = questions[currentQuestionIndex];
+    console.log(currentQuestion);
     const [editableQuestion, setEditableQuestion] = useState<string>(currentQuestion.question_text);
+    const [editableAnswers, setEditableAnswers] = useState<BaseAnswer[]>(currentQuestion.answers);
 
     const user = getCurrentUser();
 
@@ -49,17 +51,26 @@ export default function ClientQuestion({ questions, topicId }: ClientQuestionPro
     const handlePrevious = () => {
         if (currentQuestionIndex > 0) {
             setCurrentQuestionIndex(currentQuestionIndex - 1);
+            //setEditableQuestion(currentQuestion.question_text);
+            //setEditableAnswers(currentQuestion.answers);
         }
     }
 
     const handleNext = () => {
         if (currentQuestionIndex < questions.length - 1) {
             setCurrentQuestionIndex(currentQuestionIndex + 1);
+            //setEditableQuestion(currentQuestion.question_text);
+            //setEditableAnswers(currentQuestion.answers);
         }
     }
 
-
-
+    const handleAnswerChange = (index: number, field: keyof BaseAnswer, value: string | boolean) => {
+        setEditableAnswers((prevAnswers) =>
+            prevAnswers.map((answer, i) =>
+                i === index ? { ...answer, [field]: value, answer } : answer
+            )
+        );
+    }
 
     return (
         <div>
@@ -73,25 +84,50 @@ export default function ClientQuestion({ questions, topicId }: ClientQuestionPro
                 </legend>
 
                 {currentQuestion.answers.map((answer, index) => (
-                    <label key={index} style={{ display: 'block', margin: '5px 0', cursor: 'pointer', }}>
-                        <input
-                            type={currentQuestion.allow_multiple ? 'checkbox' : 'radio'}
-                            name={`question-${currentQuestion.id}`}
-                            value={index}
-                            checked={
-                                currentQuestion.allow_multiple
-                                    ? selectedAnswers[currentQuestion.id]?.includes(index)
-                                    : selectedAnswers[currentQuestion.id]?.[0] === index}
-                            onChange={() =>
-                                handleAnswerSelect(
-                                    currentQuestion.id,
-                                    index,
-                                    currentQuestion.allow_multiple,
-                                )
-                            }
-                        />
-                        {answer.answer_text}
-                    </label>
+                    <div key={index}>
+                        {user.role === 'teacher' ? (
+                            <div>
+                                <input
+                                    type="text"
+                                    value={editableAnswers[index]?.answer_text || ""}
+                                    onChange={(e) =>
+                                        handleAnswerChange(index, "answer_text", e.target.value)
+                                    }
+                                />
+                                <label>
+                                    <input
+                                        type="checkbox"
+                                        checked={editableAnswers[index]?.is_correct || false}
+                                        onChange={(e) =>
+                                            handleAnswerChange(index, "is_correct", e.target.checked)
+                                        }
+                                    />
+                                    Correct
+                                </label>
+                            </div>
+                        ) : (
+                            <label style={{ display: 'block', margin: '5px 0', cursor: 'pointer', }}>
+                                <input
+                                    type={currentQuestion.allow_multiple ? 'checkbox' : 'radio'}
+                                    name={`question-${currentQuestion.id}`}
+                                    value={index}
+                                    checked={
+                                        currentQuestion.allow_multiple
+                                            ? selectedAnswers[currentQuestion.id]?.includes(index)
+                                            : selectedAnswers[currentQuestion.id]?.[0] === index}
+                                    onChange={() =>
+                                        handleAnswerSelect(
+                                            currentQuestion.id,
+                                            index,
+                                            currentQuestion.allow_multiple,
+                                        )
+                                    }
+                                />
+                                {answer.answer_text}
+                            </label>
+                        )}
+                    </div>
+
                 ))}
             </fieldset>
 
