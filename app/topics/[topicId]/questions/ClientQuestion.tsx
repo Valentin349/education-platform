@@ -14,11 +14,13 @@ type ClientQuestionProps = {
     topicId: string;
 };
 
+type editableAnswer = BaseAnswer | StoredAnswer;
+
 export default function ClientQuestion({ questions, topicId }: ClientQuestionProps) {
     const [selectedAnswers, setSelectedAnswers] = useState<SelectedAnswers>({});
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
     const [editableQuestion, setEditableQuestion] = useState<string>('');
-    const [editableAnswers, setEditableAnswers] = useState<BaseAnswer[]>([]);
+    const [editableAnswers, setEditableAnswers] = useState<editableAnswer[]>([]);
 
     useEffect(() => {
         const currentQuestion = questions[currentQuestionIndex];
@@ -52,16 +54,53 @@ export default function ClientQuestion({ questions, topicId }: ClientQuestionPro
                 .from("questions")
                 .update({ question_text: editableQuestion })
                 .eq("id", questionId);
-    
+
             if (questionError) {
                 throw new Error(`Error updating question: ${questionError.message}`);
             }
 
             // TODO add upsert existing answers that have an ID answers
+            // separate new answers (no id) and existing answers (id)
+            const newAnswers = editableAnswers.filter((answer): answer is BaseAnswer => !("id" in answer));
+            const existingAnswers = editableAnswers.filter((answer): answer is StoredAnswer => "id" in answer);
+
+            if (existingAnswers.length > 0) {
+                const { error: existingAnswersError } = await supabase
+                    .from('answers')
+                    .update(
+                        existingAnswers.map((answer) => ({
+                            answer_text: answer.answer_text,
+                            is_correct: answer.is_correct,
+                        }))
+                    )
+                    .eq("id", existingAnswers.map((answer) => answer.id));
+
+                if (existingAnswersError) {
+                    throw new Error(`Error updating existing Answer: ${existingAnswersError.message}`);
+                }
+            }
 
 
             // TODO Insert answers that dont have ID
-        }   catch (error: any) {
+            if (newAnswers.length > 0) {
+                const { error: newAnswerError } = await supabase
+                    .from("answers")
+                    .insert(
+                        newAnswers.map((answer) => ({
+                            question_id: questionId,
+                            answer_text: answer.answer_text,
+                            is_correct: answer.is_correct
+                        }))
+                    );
+
+                if (newAnswerError) {
+                    throw new Error(`Error inserting new answers: ${newAnswerError.message}`);
+                }
+            }
+
+
+            alert("Question and answers updated successfully!");
+        } catch (error: any) {
             alert(error.message || "An error occurred while updating the question.");
         }
 
