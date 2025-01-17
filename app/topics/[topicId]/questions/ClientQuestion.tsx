@@ -59,45 +59,21 @@ export default function ClientQuestion({ questions, topicId }: ClientQuestionPro
                 throw new Error(`Error updating question: ${questionError.message}`);
             }
 
-            // TODO add upsert existing answers that have an ID answers
-            // separate new answers (no id) and existing answers (id)
-            const newAnswers = editableAnswers.filter((answer): answer is BaseAnswer => !("id" in answer));
-            const existingAnswers = editableAnswers.filter((answer): answer is StoredAnswer => "id" in answer);
+            // TODO add upsert answers here
+            const answersForUpsert = editableAnswers.map((answer) => ({
+                id: "id" in answer ? answer.id : undefined,
+                question_id: questionId,
+                answer_text: answer.answer_text,
+                is_correct: answer.is_correct
+            }));
 
-            if (existingAnswers.length > 0) {
-                const { error: existingAnswersError } = await supabase
-                    .from('answers')
-                    .update(
-                        existingAnswers.map((answer) => ({
-                            answer_text: answer.answer_text,
-                            is_correct: answer.is_correct,
-                        }))
-                    )
-                    .eq("id", existingAnswers.map((answer) => answer.id));
+            const { error: answersError } = await supabase
+            .from("answers")
+            .upsert(answersForUpsert, { onConflict: "id" });
 
-                if (existingAnswersError) {
-                    throw new Error(`Error updating existing Answer: ${existingAnswersError.message}`);
-                }
+            if (answersError) {
+                throw new Error(`Error updating answers: ${answersError.message}`);
             }
-
-
-            // TODO Insert answers that dont have ID
-            if (newAnswers.length > 0) {
-                const { error: newAnswerError } = await supabase
-                    .from("answers")
-                    .insert(
-                        newAnswers.map((answer) => ({
-                            question_id: questionId,
-                            answer_text: answer.answer_text,
-                            is_correct: answer.is_correct
-                        }))
-                    );
-
-                if (newAnswerError) {
-                    throw new Error(`Error inserting new answers: ${newAnswerError.message}`);
-                }
-            }
-
 
             alert("Question and answers updated successfully!");
         } catch (error: any) {
