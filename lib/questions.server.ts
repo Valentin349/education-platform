@@ -12,6 +12,7 @@ export async function getQuestionsByTopic(topicId: String) {
             allow_multiple,
             answers (
                 id,
+                question_id,
                 answer_text,
                 is_correct
             )

@@ -13,4 +13,5 @@ export type BaseAnswer = {
 
 export type StoredAnswer = BaseAnswer & {
     id: number;
+    question_id: number;
 }
