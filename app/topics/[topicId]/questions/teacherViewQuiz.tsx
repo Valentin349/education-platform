@@ -1,7 +1,7 @@
 "use client"
 import { BaseAnswer, Question, StoredAnswer } from "@/lib/types";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { MouseEvent, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 type ClientQuestionProps = {
@@ -13,32 +13,33 @@ type editableAnswer = BaseAnswer | StoredAnswer;
 
 export default function TeacherViewQuiz({ questions, topicId }: ClientQuestionProps) {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
-    const [editableQuestion, setEditableQuestion] = useState<string>('');
-    const [editableAnswers, setEditableAnswers] = useState<editableAnswer[]>([]);
+    const [questionText, setQuestionText] = useState<string>('');
+    const [answers, setAnswers] = useState<editableAnswer[]>([]);
 
     useEffect(() => {
         const currentQuestion = questions[currentQuestionIndex];
-        setEditableQuestion(currentQuestion.question_text);
-        setEditableAnswers(currentQuestion.answers);
+        setQuestionText(currentQuestion.question_text);
+        setAnswers(currentQuestion.answers);
     }, [currentQuestionIndex, questions])
 
-    const handleUpdateQuestion = async (questionId: number) => {
+    const updateQuestion = async (questionId: number): Promise<void> => {
         // TODO abstract function
         const supabase = createClient();
         try {
             const { error: questionError } = await supabase
                 .from("questions")
-                .update({ question_text: editableQuestion })
+                .update({ question_text: questionText })
                 .eq("id", questionId);
 
             if (questionError) {
                 throw new Error(`Error updating question: ${questionError.message}`);
             }
 
+            // TODO set id to undefined if new answer
 
             const { error: answersError } = await supabase
                 .from("answers")
-                .upsert(editableAnswers, { onConflict: "id" });
+                .upsert(answers, { onConflict: "id" });
 
             if (answersError) {
                 throw new Error(`Error updating answers: ${answersError.message}`);
@@ -51,60 +52,80 @@ export default function TeacherViewQuiz({ questions, topicId }: ClientQuestionPr
 
     }
 
-    const handleRemoveQuestion = async (questionId: number) => {
-        // TODO implement supabase REMOVE 
+    const removeQuestion = async (questionId: number): Promise<void> => {
+        // TODO implement supabase REMOVE of whole question 
     }
 
-    const handlePrevious = () => {
+    const handlePrevious = (): void => {
         if (currentQuestionIndex > 0) {
             setCurrentQuestionIndex(currentQuestionIndex - 1);
         }
     }
 
-    const handleNext = () => {
+    const handleNext = (): void => {
         if (currentQuestionIndex < questions.length - 1) {
             setCurrentQuestionIndex(currentQuestionIndex + 1);
         }
     }
 
-    const handleAnswerChange = (index: number, field: keyof BaseAnswer, value: string | boolean) => {
-        setEditableAnswers((prevAnswers) =>
-            prevAnswers.map((answer, i) =>
-                i === index ? { ...answer, [field]: value } : answer
-            )
-        );
+    const answerChange = (index: number, field: keyof BaseAnswer, value: string | boolean): void => {
+        const updatedAnswers = [...answers];
+        updatedAnswers[index] = { ...updatedAnswers[index], [field]: value };
+        setAnswers(updatedAnswers);
     }
 
-    const currentQuestion = questions[currentQuestionIndex];
+    const removeAnswer = (index: number, event: MouseEvent<HTMLButtonElement>): void => {
+        // TODO update remove answer so that database also gets updated
+        event.preventDefault();
+        if (answers.length > 2) {
+            const updatedAnswers = [...answers];
+            updatedAnswers.splice(index, 1)
+            setAnswers(updatedAnswers)
+        }
+    }
+
+    const addAnswer = (): void => {
+        // TODO addAnswer needs to update on the databse 
+        if (answers.length < 4) {
+            setAnswers([...answers, { answer_text: '', is_correct: false }])
+        }
+    }
+
     return (
         <div>
             <fieldset>
                 <legend>
-                    <input type="text" value={editableQuestion} onChange={(e) => setEditableQuestion(e.target.value)} />
+                    <input type="text" value={questionText} onChange={(e) => setQuestionText(e.target.value)} />
                 </legend>
 
-                {currentQuestion.answers.map((_, index) => (
+                {answers.map((answer, index) => (
                     <div key={index}>
                         <input
                             type="text"
-                            value={editableAnswers[index]?.answer_text || ""}
+                            value={answer.answer_text}
+                            placeholder={`Answer ${index + 1}`}
                             onChange={(e) =>
-                                handleAnswerChange(index, "answer_text", e.target.value)
+                                answerChange(index, "answer_text", e.target.value)
                             }
                         />
                         <label>
                             <input
                                 type="checkbox"
-                                checked={editableAnswers[index]?.is_correct || false}
+                                checked={answer.is_correct}
                                 onChange={(e) =>
-                                    handleAnswerChange(index, "is_correct", e.target.checked)
+                                    answerChange(index, "is_correct", e.target.checked)
                                 }
                             />
                             Correct
                         </label>
+                        <button onClick={(event) => removeAnswer(index, event)} disabled={answers.length <= 2}>remove</button>
                     </div>
 
                 ))}
+
+                <button type="button" onClick={addAnswer} disabled={answers.length >= 4}>
+                    Add Answer
+                </button>
             </fieldset>
 
             <div>
@@ -116,11 +137,11 @@ export default function TeacherViewQuiz({ questions, topicId }: ClientQuestionPr
                     Next
                 </button>
 
-                <button onClick={() => handleUpdateQuestion(currentQuestion.id)}>
+                <button onClick={() => updateQuestion(questions[currentQuestionIndex].id)}>
                     Update Question
                 </button>
 
-                <button onClick={() => handleRemoveQuestion(currentQuestion.id)}>
+                <button onClick={() => removeQuestion(questions[currentQuestionIndex].id)}>
                     remove question
                 </button>
             </div>

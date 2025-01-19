@@ -49,7 +49,7 @@ export default function CreateQuestion({ topicId }: CreateQuestionProps) {
         }
     }
 
-    const updateAnwer = (index: number, value: string) => {
+    const updateAnswer = (index: number, value: string) => {
         const updatedAnswers = [...answers];
         updatedAnswers[index].answer_text = value;
         setAnswers(updatedAnswers);
@@ -83,7 +83,7 @@ export default function CreateQuestion({ topicId }: CreateQuestionProps) {
                     <input type="text" name="question" placeholder="Question" value={questionText} onChange={(e) => setQuestionText(e.target.value.trim())} />
                     {answers.map((answer, index) => (
                         <div key={index}>
-                            <input type="text" placeholder={`Answer ${index + 1}`} value={answer.answer_text} onChange={(e) => updateAnwer(index, e.target.value)} />
+                            <input type="text" placeholder={`Answer ${index + 1}`} value={answer.answer_text} onChange={(e) => updateAnswer(index, e.target.value)} />
                             <label>
                                 Correct
                                 <input type="checkbox" checked={answer.is_correct} onChange={() => toggleCorrectAnswer(index)} />
