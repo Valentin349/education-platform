@@ -15,6 +15,7 @@ export default function TeacherViewQuiz({ questions, topicId }: ClientQuestionPr
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
     const [questionText, setQuestionText] = useState<string>('');
     const [answers, setAnswers] = useState<editableAnswer[]>([]);
+    const [deletedAnswerIds, setDeletedAnswerIds] = useState<number[]>([])
 
     useEffect(() => {
         const currentQuestion = questions[currentQuestionIndex];
@@ -35,8 +36,19 @@ export default function TeacherViewQuiz({ questions, topicId }: ClientQuestionPr
                 throw new Error(`Error updating question: ${questionError.message}`);
             }
 
-            // TODO set id to undefined if new answer
+            // Delete answers before updating answers
+            if (deletedAnswerIds.length > 0) {
+                const { error: deleteError } = await supabase
+                    .from("answers")
+                    .delete()
+                    .in("id", deletedAnswerIds);
 
+                if (deleteError) {
+                    throw new Error(`Error updating question: ${deleteError.message}`);
+                }
+            }
+            
+            // TODO set id to undefined if new answer
             const { error: answersError } = await supabase
                 .from("answers")
                 .upsert(answers, { onConflict: "id" });
@@ -45,6 +57,7 @@ export default function TeacherViewQuiz({ questions, topicId }: ClientQuestionPr
                 throw new Error(`Error updating answers: ${answersError.message}`);
             }
 
+            setDeletedAnswerIds([]);
             alert("Question and answers updated successfully!");
         } catch (error: any) {
             alert(error.message || "An error occurred while updating the question.");
@@ -75,13 +88,15 @@ export default function TeacherViewQuiz({ questions, topicId }: ClientQuestionPr
     }
 
     const removeAnswer = (index: number, event: MouseEvent<HTMLButtonElement>): void => {
-        // TODO update remove answer so that database also gets updated
-        event.preventDefault();
-        if (answers.length > 2) {
-            const updatedAnswers = [...answers];
-            updatedAnswers.splice(index, 1)
-            setAnswers(updatedAnswers)
+        event.preventDefault();        
+        if (answers.length < 2) return;
+        
+        const removedAnswer = answers[index];
+        if ('id' in removedAnswer) {
+            setDeletedAnswerIds((prevRemoved) => [...prevRemoved, removedAnswer.id]);
         }
+
+        setAnswers((prev) => prev.filter((_, i) => i !== index));
     }
 
     const addAnswer = (): void => {
