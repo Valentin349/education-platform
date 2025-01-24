@@ -10,7 +10,7 @@ type ClientQuestionProps = {
 };
 
 type editableAnswer = BaseAnswer | StoredAnswer;
-
+// TODO refactor
 export default function TeacherViewQuiz({ questions, topicId }: ClientQuestionProps) {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
     const [questionText, setQuestionText] = useState<string>('');
@@ -47,14 +47,35 @@ export default function TeacherViewQuiz({ questions, topicId }: ClientQuestionPr
                     throw new Error(`Error updating question: ${deleteError.message}`);
                 }
             }
-            
-            // TODO set id to undefined if new answer
-            const { error: answersError } = await supabase
-                .from("answers")
-                .upsert(answers, { onConflict: "id" });
 
-            if (answersError) {
-                throw new Error(`Error updating answers: ${answersError.message}`);
+            // Upsert ALL answers for a given question.
+            const existingAnswers = answers.filter((answer) => 'id' in answer);
+            const newAnswers = answers
+                .filter((answer) => !('id' in answer))
+                .map((answer) => ({
+                    ...answer,
+                    question_id: questionId
+                }));
+            
+            if (existingAnswers.length > 0) {
+                const { error: upsertAnswerError } = await supabase
+                    .from("answers")
+                    .upsert(existingAnswers, { onConflict: "id" });
+
+                if (upsertAnswerError) {
+                    throw new Error(`Error upserting answers: ${upsertAnswerError.message}`);
+                }
+            }
+
+            if (newAnswers.length > 0) {
+                console.log(newAnswers);
+                const { error: insertAnswerError } = await supabase
+                    .from('answers')
+                    .insert(newAnswers);
+
+                if (insertAnswerError) {
+                    throw new Error(`Error inserting answers: ${insertAnswerError.message}`);
+                }
             }
 
             setDeletedAnswerIds([]);
@@ -88,9 +109,9 @@ export default function TeacherViewQuiz({ questions, topicId }: ClientQuestionPr
     }
 
     const removeAnswer = (index: number, event: MouseEvent<HTMLButtonElement>): void => {
-        event.preventDefault();        
+        event.preventDefault();
         if (answers.length < 2) return;
-        
+
         const removedAnswer = answers[index];
         if ('id' in removedAnswer) {
             setDeletedAnswerIds((prevRemoved) => [...prevRemoved, removedAnswer.id]);
@@ -100,7 +121,6 @@ export default function TeacherViewQuiz({ questions, topicId }: ClientQuestionPr
     }
 
     const addAnswer = (): void => {
-        // TODO addAnswer needs to update on the databse 
         if (answers.length < 4) {
             setAnswers([...answers, { answer_text: '', is_correct: false }])
         }
