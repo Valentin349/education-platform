@@ -3,6 +3,8 @@ import { BaseAnswer, Question, StoredAnswer } from "@/lib/types";
 import Link from "next/link";
 import { MouseEvent, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import CreateQuestion from "./createQuestion";
+import { getQuestionsByTopic } from "@/lib/questions.server";
 
 type ClientQuestionProps = {
     questions: Question[];
@@ -11,11 +13,13 @@ type ClientQuestionProps = {
 
 type editableAnswer = BaseAnswer | StoredAnswer;
 // TODO refactor
-export default function TeacherViewQuiz({ questions, topicId }: ClientQuestionProps) {
+export default function TeacherViewQuiz({ questions: initialQuestions, topicId }: ClientQuestionProps) {
+    const [questions, setQuestions] = useState<Question[]>(initialQuestions);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
     const [questionText, setQuestionText] = useState<string>('');
     const [answers, setAnswers] = useState<editableAnswer[]>([]);
     const [deletedAnswerIds, setDeletedAnswerIds] = useState<number[]>([])
+    const [isCreatingQuestion, setIsCreatingQuestion] = useState<boolean>(false)
 
     useEffect(() => {
         const currentQuestion = questions[currentQuestionIndex];
@@ -87,7 +91,22 @@ export default function TeacherViewQuiz({ questions, topicId }: ClientQuestionPr
     }
 
     const removeQuestion = async (questionId: number): Promise<void> => {
-        // TODO implement supabase REMOVE of whole question 
+        const supabase = createClient();
+        try {
+            const { error } = await supabase
+                .from("questions")
+                .delete()
+                .eq("id", questionId);
+            
+            if (error) {
+                throw new Error(`Error removing question`);
+            }
+
+            await refreshQuestions();
+            alert("Question successfully removed");
+        } catch (error: any) {
+            alert(error.message || "An error occured while deleting a question.");
+        }
     }
 
     const handlePrevious = (): void => {
@@ -126,7 +145,34 @@ export default function TeacherViewQuiz({ questions, topicId }: ClientQuestionPr
         }
     }
 
-    return (
+    const refreshQuestions = async (): Promise<void> => {
+        const supabase = createClient();
+        const { data: updatedQuestions, error} = await supabase
+            .from("questions")
+            .select(`
+                id,
+                question_text,
+                topic_id,
+                allow_multiple,
+                answers(*)   
+            `)
+            .eq("topic_id", topicId);
+
+        if (error) {
+            alert(`Error fetching questions: ${error.message}`);
+            return;
+        }
+
+        if (updatedQuestions) {
+            setQuestions(updatedQuestions);
+            setCurrentQuestionIndex(updatedQuestions.length - 1);
+            setIsCreatingQuestion(false);
+        }
+    }
+
+    return isCreatingQuestion
+    ? <CreateQuestion topicId={topicId} onQuestionCreated={refreshQuestions}/>
+    : (
         <div>
             <fieldset>
                 <legend>
@@ -177,7 +223,11 @@ export default function TeacherViewQuiz({ questions, topicId }: ClientQuestionPr
                 </button>
 
                 <button onClick={() => removeQuestion(questions[currentQuestionIndex].id)}>
-                    remove question
+                    Remove question
+                </button>
+
+                <button onClick={() => setIsCreatingQuestion(true)}>
+                    Add question
                 </button>
             </div>
 

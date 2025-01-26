@@ -23,6 +23,5 @@ export async function createQuestion(
         .from('answers')
         .insert(answersWithQuestionId);
 
-    if (answersError) throw new Error(`Error inserting answers: ${answersError.message}`)
-
+    if (answersError) throw new Error(`Error inserting answers: ${answersError.message}`);
 }

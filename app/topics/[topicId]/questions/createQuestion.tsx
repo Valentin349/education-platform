@@ -3,13 +3,14 @@
 import RoleBasedView from "@/components/RoleBasedView";
 import { useState } from "react"
 import { createQuestion } from "@/lib/questions.client";
-import { BaseAnswer } from "@/lib/types";
+import { BaseAnswer, Question } from "@/lib/types";
 
 type CreateQuestionProps = {
     topicId: string;
+    onQuestionCreated?: () => Promise<void>;
 }
 
-export default function CreateQuestion({ topicId }: CreateQuestionProps) {
+export default function CreateQuestion({ topicId, onQuestionCreated }: CreateQuestionProps) {
     const [questionText, setQuestionText] = useState<string>('');
     const [answers, setAnswers] = useState<BaseAnswer[]>([
         { answer_text: '', is_correct: false },
@@ -35,7 +36,11 @@ export default function CreateQuestion({ topicId }: CreateQuestionProps) {
         try {
             setLoading(true);
 
-            await createQuestion(topicId, questionText, allowMultiple, answers);
+            const newQuestion = await createQuestion(topicId, questionText, allowMultiple, answers);
+
+            if (onQuestionCreated) {
+                onQuestionCreated();
+            }
             alert('successfully created quetsion');
             setQuestionText('');
             setAnswers([

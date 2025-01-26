@@ -1,8 +1,6 @@
 import VideoPlayer from '@/components/videoPlayer';
 import Link from 'next/link';
 import { getTopicById } from '@/lib/topics.server';
-import CreateQuestion from './createQuestion';
-import { getCurrentUser } from '@/lib/mockUsers';
 
 const chapters = [
 	{ time: 0, label: "Introduction" },
@@ -16,16 +14,11 @@ export default async function TopicDetailsPage({ params }: { params: Promise<{ t
 		const topicId = (await params).topicId;
 		const topic = await getTopicById(topicId);
 
-		const user = getCurrentUser();
-
 		return (
 			<div>
 				<h1>{topic.title}</h1>
 				<p>{topic.description}</p>
 				<VideoPlayer videoUrl={topic.video_url} chapters={chapters} />
-				{user.role === 'teacher' && (
-					<CreateQuestion topicId={topicId}/>
-				)}
 				<div>
 					<Link href={'/topics'}>Topics</Link>
 					<Link href={`/topics/${topicId}/questions`}>Questions</Link>
