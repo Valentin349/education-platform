@@ -2,6 +2,7 @@
 import { Question } from "@/lib/types";
 import Link from "next/link";
 import { useState } from "react";
+import { QuizNavigation } from "./quizNavigation";
 
 type SelectedAnswers = {
     [questionId: number]: number[];
@@ -32,18 +33,6 @@ export default function StudentViewQuiz({ questions, topicId }: ClientQuestionPr
         });
     };
 
-    const handlePrevious = () => {
-        if (currentQuestionIndex > 0) {
-            setCurrentQuestionIndex(currentQuestionIndex - 1);
-        }
-    }
-
-    const handleNext = () => {
-        if (currentQuestionIndex < questions.length - 1) {
-            setCurrentQuestionIndex(currentQuestionIndex + 1);
-        }
-    }
-
     const currentQuestion = questions[currentQuestionIndex];
     return (
         <div>
@@ -71,14 +60,12 @@ export default function StudentViewQuiz({ questions, topicId }: ClientQuestionPr
                     </label>
                 ))}
             </fieldset>
-            <div>
-                <button onClick={handlePrevious} disabled={currentQuestionIndex === 0}>
-                    previous
-                </button>
-                <button onClick={handleNext} disabled={currentQuestionIndex === questions.length - 1}>
-                    Next
-                </button>
-            </div>
+            <QuizNavigation
+                currentQuestionIndex={currentQuestionIndex}
+                totalQuestions={questions.length}
+                onPrevious={() => setCurrentQuestionIndex((prev) => Math.max(prev - 1, 0))}
+                onNext={() => setCurrentQuestionIndex((prev) => Math.min(prev + 1, questions.length - 1))}
+            />
 
             <Link href={`/topics/${topicId}`}>
                 Leave Quiz

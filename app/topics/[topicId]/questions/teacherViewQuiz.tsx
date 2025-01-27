@@ -4,7 +4,7 @@ import Link from "next/link";
 import { MouseEvent, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import CreateQuestion from "./createQuestion";
-import { getQuestionsByTopic } from "@/lib/questions.server";
+import { QuizNavigation } from "./quizNavigation";
 
 type ClientQuestionProps = {
     questions: Question[];
@@ -60,7 +60,7 @@ export default function TeacherViewQuiz({ questions: initialQuestions, topicId }
                     ...answer,
                     question_id: questionId
                 }));
-            
+
             if (existingAnswers.length > 0) {
                 const { error: upsertAnswerError } = await supabase
                     .from("answers")
@@ -97,7 +97,7 @@ export default function TeacherViewQuiz({ questions: initialQuestions, topicId }
                 .from("questions")
                 .delete()
                 .eq("id", questionId);
-            
+
             if (error) {
                 throw new Error(`Error removing question`);
             }
@@ -106,18 +106,6 @@ export default function TeacherViewQuiz({ questions: initialQuestions, topicId }
             alert("Question successfully removed");
         } catch (error: any) {
             alert(error.message || "An error occured while deleting a question.");
-        }
-    }
-
-    const handlePrevious = (): void => {
-        if (currentQuestionIndex > 0) {
-            setCurrentQuestionIndex(currentQuestionIndex - 1);
-        }
-    }
-
-    const handleNext = (): void => {
-        if (currentQuestionIndex < questions.length - 1) {
-            setCurrentQuestionIndex(currentQuestionIndex + 1);
         }
     }
 
@@ -147,7 +135,7 @@ export default function TeacherViewQuiz({ questions: initialQuestions, topicId }
 
     const refreshQuestions = async (): Promise<void> => {
         const supabase = createClient();
-        const { data: updatedQuestions, error} = await supabase
+        const { data: updatedQuestions, error } = await supabase
             .from("questions")
             .select(`
                 id,
@@ -170,9 +158,9 @@ export default function TeacherViewQuiz({ questions: initialQuestions, topicId }
         }
     }
 
-    return isCreatingQuestion
-    ? <CreateQuestion topicId={topicId} onQuestionCreated={refreshQuestions}/>
-    : (
+    return isCreatingQuestion ? (
+        <CreateQuestion topicId={topicId} onQuestionCreated={refreshQuestions} />
+    ) : (
         <div>
             <fieldset>
                 <legend>
@@ -209,15 +197,8 @@ export default function TeacherViewQuiz({ questions: initialQuestions, topicId }
                 </button>
             </fieldset>
 
+
             <div>
-                <button onClick={handlePrevious} disabled={currentQuestionIndex === 0}>
-                    previous
-                </button>
-
-                <button onClick={handleNext} disabled={currentQuestionIndex === questions.length - 1}>
-                    Next
-                </button>
-
                 <button onClick={() => updateQuestion(questions[currentQuestionIndex].id)}>
                     Update Question
                 </button>
@@ -230,6 +211,13 @@ export default function TeacherViewQuiz({ questions: initialQuestions, topicId }
                     Add question
                 </button>
             </div>
+
+            <QuizNavigation
+                currentQuestionIndex={currentQuestionIndex}
+                totalQuestions={questions.length}
+                onPrevious={() => setCurrentQuestionIndex((prev) => Math.max(prev - 1, 0))}
+                onNext={() => setCurrentQuestionIndex((prev) => Math.min(prev + 1, questions.length - 1))}
+            />
 
             <Link href={`/topics/${topicId}`}>
                 Leave Quiz
