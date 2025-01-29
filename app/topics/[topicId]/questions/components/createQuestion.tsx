@@ -3,7 +3,7 @@
 import RoleBasedView from "@/components/RoleBasedView";
 import { useState } from "react"
 import { createQuestion } from "@/lib/questions.client";
-import { BaseAnswer, Question } from "@/lib/types";
+import { BaseAnswer } from "@/lib/types";
 
 type CreateQuestionProps = {
     topicId: string;
@@ -36,7 +36,7 @@ export function CreateQuestion({ topicId, onQuestionCreated }: CreateQuestionPro
         try {
             setLoading(true);
 
-            const newQuestion = await createQuestion(topicId, questionText, allowMultiple, answers);
+            await createQuestion(topicId, questionText, allowMultiple, answers);
 
             if (onQuestionCreated) {
                 onQuestionCreated();
