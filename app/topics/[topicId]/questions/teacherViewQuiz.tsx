@@ -1,10 +1,11 @@
 "use client"
 import { BaseAnswer, Question, StoredAnswer } from "@/lib/types";
 import Link from "next/link";
-import { MouseEvent, useEffect, useState } from "react";
+import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import CreateQuestion from "./createQuestion";
-import { QuizNavigation } from "./quizNavigation";
+import { CreateQuestion } from "./components/createQuestion";
+import { QuizNavigation } from "./components/quizNavigation";
+import { QuestionEditor } from "./components/questionEditor";
 
 type ClientQuestionProps = {
     questions: Question[];
@@ -16,24 +17,15 @@ type editableAnswer = BaseAnswer | StoredAnswer;
 export default function TeacherViewQuiz({ questions: initialQuestions, topicId }: ClientQuestionProps) {
     const [questions, setQuestions] = useState<Question[]>(initialQuestions);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
-    const [questionText, setQuestionText] = useState<string>('');
-    const [answers, setAnswers] = useState<editableAnswer[]>([]);
-    const [deletedAnswerIds, setDeletedAnswerIds] = useState<number[]>([])
     const [isCreatingQuestion, setIsCreatingQuestion] = useState<boolean>(false)
 
-    useEffect(() => {
-        const currentQuestion = questions[currentQuestionIndex];
-        setQuestionText(currentQuestion.question_text);
-        setAnswers(currentQuestion.answers);
-    }, [currentQuestionIndex, questions])
-
-    const updateQuestion = async (questionId: number): Promise<void> => {
+    const handleUpdateQuestion = async (questionId: number, updatedText: string, updatedAnswers: editableAnswer[], deletedAnswerIds: number[]): Promise<void> => {
         // TODO abstract function
         const supabase = createClient();
         try {
             const { error: questionError } = await supabase
                 .from("questions")
-                .update({ question_text: questionText })
+                .update({ question_text: updatedText })
                 .eq("id", questionId);
 
             if (questionError) {
@@ -53,8 +45,8 @@ export default function TeacherViewQuiz({ questions: initialQuestions, topicId }
             }
 
             // Upsert ALL answers for a given question.
-            const existingAnswers = answers.filter((answer) => 'id' in answer);
-            const newAnswers = answers
+            const existingAnswers = updatedAnswers.filter((answer) => 'id' in answer);
+            const newAnswers = updatedAnswers
                 .filter((answer) => !('id' in answer))
                 .map((answer) => ({
                     ...answer,
@@ -82,7 +74,6 @@ export default function TeacherViewQuiz({ questions: initialQuestions, topicId }
                 }
             }
 
-            setDeletedAnswerIds([]);
             alert("Question and answers updated successfully!");
         } catch (error: any) {
             alert(error.message || "An error occurred while updating the question.");
@@ -90,7 +81,7 @@ export default function TeacherViewQuiz({ questions: initialQuestions, topicId }
 
     }
 
-    const removeQuestion = async (questionId: number): Promise<void> => {
+    const handleRemoveQuestion = async (questionId: number): Promise<void> => {
         const supabase = createClient();
         try {
             const { error } = await supabase
@@ -106,30 +97,6 @@ export default function TeacherViewQuiz({ questions: initialQuestions, topicId }
             alert("Question successfully removed");
         } catch (error: any) {
             alert(error.message || "An error occured while deleting a question.");
-        }
-    }
-
-    const answerChange = (index: number, field: keyof BaseAnswer, value: string | boolean): void => {
-        const updatedAnswers = [...answers];
-        updatedAnswers[index] = { ...updatedAnswers[index], [field]: value };
-        setAnswers(updatedAnswers);
-    }
-
-    const removeAnswer = (index: number, event: MouseEvent<HTMLButtonElement>): void => {
-        event.preventDefault();
-        if (answers.length < 2) return;
-
-        const removedAnswer = answers[index];
-        if ('id' in removedAnswer) {
-            setDeletedAnswerIds((prevRemoved) => [...prevRemoved, removedAnswer.id]);
-        }
-
-        setAnswers((prev) => prev.filter((_, i) => i !== index));
-    }
-
-    const addAnswer = (): void => {
-        if (answers.length < 4) {
-            setAnswers([...answers, { answer_text: '', is_correct: false }])
         }
     }
 
@@ -162,51 +129,13 @@ export default function TeacherViewQuiz({ questions: initialQuestions, topicId }
         <CreateQuestion topicId={topicId} onQuestionCreated={refreshQuestions} />
     ) : (
         <div>
-            <fieldset>
-                <legend>
-                    <input type="text" value={questionText} onChange={(e) => setQuestionText(e.target.value)} />
-                </legend>
-
-                {answers.map((answer, index) => (
-                    <div key={index}>
-                        <input
-                            type="text"
-                            value={answer.answer_text}
-                            placeholder={`Answer ${index + 1}`}
-                            onChange={(e) =>
-                                answerChange(index, "answer_text", e.target.value)
-                            }
-                        />
-                        <label>
-                            <input
-                                type="checkbox"
-                                checked={answer.is_correct}
-                                onChange={(e) =>
-                                    answerChange(index, "is_correct", e.target.checked)
-                                }
-                            />
-                            Correct
-                        </label>
-                        <button onClick={(event) => removeAnswer(index, event)} disabled={answers.length <= 2}>remove</button>
-                    </div>
-
-                ))}
-
-                <button type="button" onClick={addAnswer} disabled={answers.length >= 4}>
-                    Add Answer
-                </button>
-            </fieldset>
-
+           <QuestionEditor
+                question={questions[currentQuestionIndex]}
+                onUpdateQuestion={handleUpdateQuestion}
+                onRemoveQuestion={handleRemoveQuestion}
+            />
 
             <div>
-                <button onClick={() => updateQuestion(questions[currentQuestionIndex].id)}>
-                    Update Question
-                </button>
-
-                <button onClick={() => removeQuestion(questions[currentQuestionIndex].id)}>
-                    Remove question
-                </button>
-
                 <button onClick={() => setIsCreatingQuestion(true)}>
                     Add question
                 </button>

@@ -10,7 +10,7 @@ type CreateQuestionProps = {
     onQuestionCreated?: () => Promise<void>;
 }
 
-export default function CreateQuestion({ topicId, onQuestionCreated }: CreateQuestionProps) {
+export function CreateQuestion({ topicId, onQuestionCreated }: CreateQuestionProps) {
     const [questionText, setQuestionText] = useState<string>('');
     const [answers, setAnswers] = useState<BaseAnswer[]>([
         { answer_text: '', is_correct: false },
