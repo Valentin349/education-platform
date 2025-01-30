@@ -11,25 +11,25 @@ type ClientQuestionProps = {
     questions: Question[];
     topicId: string;
 };
-// TODO refactor
+
 export default function TeacherViewQuiz({ questions: initialQuestions, topicId }: ClientQuestionProps) {
     const [questions, setQuestions] = useState<Question[]>(initialQuestions);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
     const [isCreatingQuestion, setIsCreatingQuestion] = useState<boolean>(false)
 
-    const handleUpdateQuestion = async (questionId: number, updatedText: string, updatedAnswers: Answer[], deletedAnswerIds: number[]): Promise<void> => {
-        // TODO abstract function
+    const handleUpdateQuestion = async (originalQuestion: Question, updatedText: string, updatedAnswers: Answer[], deletedAnswerIds: number[]): Promise<void> => {
         const supabase = createClient();
         try {
-            const { error: questionError } = await supabase
-                .from("questions")
-                .update({ question_text: updatedText, allow_multiple: updatedAnswers.filter((answer) => answer.is_correct).length > 1 })
-                .eq("id", questionId);
+            if (updatedText !== originalQuestion.question_text) {
+                const { error: questionError } = await supabase
+                    .from("questions")
+                    .update({ question_text: updatedText, allow_multiple: updatedAnswers.filter((answer) => answer.is_correct).length > 1 })
+                    .eq("id", originalQuestion.id);
 
-            if (questionError) {
-                throw new Error(`Error updating question: ${questionError.message}`);
+                if (questionError) {
+                    throw new Error(`Error updating question: ${questionError.message}`);
+                }
             }
-
             // Delete answers before updating answers
             if (deletedAnswerIds.length > 0) {
                 const { error: deleteError } = await supabase
@@ -43,12 +43,12 @@ export default function TeacherViewQuiz({ questions: initialQuestions, topicId }
             }
 
             // Upsert ALL answers for a given question.
-            const existingAnswers = updatedAnswers.filter((answer) => answer.id !== null);
+            const existingAnswers = updatedAnswers.filter((answer) => answer.id !== undefined);
             const newAnswers = updatedAnswers
-                .filter((answer) => !('id' in answer))
+                .filter((answer) => answer.id === undefined)
                 .map((answer) => ({
                     ...answer,
-                    question_id: questionId
+                    question_id: originalQuestion.id
                 }));
 
             if (existingAnswers.length > 0) {
@@ -62,7 +62,7 @@ export default function TeacherViewQuiz({ questions: initialQuestions, topicId }
             }
 
             if (newAnswers.length > 0) {
-                const { error: insertAnswerError, data } = await supabase
+                const { error: insertAnswerError } = await supabase
                     .from('answers')
                     .insert(newAnswers);
 
@@ -73,11 +73,11 @@ export default function TeacherViewQuiz({ questions: initialQuestions, topicId }
             }
 
             setQuestions((prevQuestions) =>
-                prevQuestions.map((q) => 
-                    q.id === questionId
-                        ? {...q, question_text: updatedText, answers: updatedAnswers}
+                prevQuestions.map((q) =>
+                    q.id === originalQuestion.id
+                        ? { ...q, question_text: updatedText, answers: updatedAnswers }
                         : q
-                )   
+                )
             );
 
             alert("Question and answers updated successfully!");
@@ -135,7 +135,7 @@ export default function TeacherViewQuiz({ questions: initialQuestions, topicId }
         <CreateQuestion topicId={topicId} onQuestionCreated={refreshQuestions} />
     ) : (
         <div>
-           <QuestionEditor
+            <QuestionEditor
                 question={questions[currentQuestionIndex]}
                 onUpdateQuestion={handleUpdateQuestion}
                 onRemoveQuestion={handleRemoveQuestion}

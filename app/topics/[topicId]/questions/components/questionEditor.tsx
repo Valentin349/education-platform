@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 type QuestionEditorProps = {
     question: Question;
-    onUpdateQuestion: (questionId: number, updatedText: string, updateAnswers: Answer[], deletedAnswerIds: number[]) => Promise<void>;
+    onUpdateQuestion: (originalQuestion: Question, updatedText: string, updateAnswers: Answer[], deletedAnswerIds: number[]) => Promise<void>;
     onRemoveQuestion: (questionId: number) => Promise<void>
 }
 
@@ -42,7 +42,7 @@ export function QuestionEditor({ question, onUpdateQuestion, onRemoveQuestion }:
     }
 
     const handleUpdate = (): void => {
-        onUpdateQuestion(question.id, questionText, answers, deletedAnswerIds);
+        onUpdateQuestion(question, questionText, answers, deletedAnswerIds);
     }
 
     return (
