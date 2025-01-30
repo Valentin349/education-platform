@@ -52,7 +52,6 @@ export default function TeacherViewQuiz({ questions: initialQuestions, topicId }
                 }));
 
             if (existingAnswers.length > 0) {
-                console.log(existingAnswers);
                 const { error: upsertAnswerError } = await supabase
                     .from("answers")
                     .upsert(existingAnswers, { onConflict: "id" });
@@ -63,8 +62,7 @@ export default function TeacherViewQuiz({ questions: initialQuestions, topicId }
             }
 
             if (newAnswers.length > 0) {
-                console.log(newAnswers);
-                const { error: insertAnswerError, data: insertedAnswers } = await supabase
+                const { error: insertAnswerError, data } = await supabase
                     .from('answers')
                     .insert(newAnswers);
 
@@ -72,7 +70,6 @@ export default function TeacherViewQuiz({ questions: initialQuestions, topicId }
                     throw new Error(`Error inserting answers: ${insertAnswerError.message}`);
                 }
 
-                console.log(insertedAnswers);
             }
 
             setQuestions((prevQuestions) =>
