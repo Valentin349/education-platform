@@ -1,17 +1,16 @@
-import { BaseAnswer, Question, StoredAnswer } from "@/lib/types"
+import { Answer, Question } from "@/lib/types"
 import { useEffect, useState } from "react";
 
-type editableAnswer = BaseAnswer | StoredAnswer;
 
 type QuestionEditorProps = {
     question: Question;
-    onUpdateQuestion: (questionId: number, updatedText: string, updateAnswers: editableAnswer[], deletedAnswerIds: number[]) => Promise<void>;
+    onUpdateQuestion: (questionId: number, updatedText: string, updateAnswers: Answer[], deletedAnswerIds: number[]) => Promise<void>;
     onRemoveQuestion: (questionId: number) => Promise<void>
 }
 
 export function QuestionEditor({ question, onUpdateQuestion, onRemoveQuestion }: QuestionEditorProps) {
     const [questionText, setQuestionText] = useState<string>(question.question_text);
-    const [answers, setAnswers] = useState<editableAnswer[]>(question.answers);
+    const [answers, setAnswers] = useState<Answer[]>(question.answers);
     const [deletedAnswerIds, setDeletedAnswerIds] = useState<number[]>([]);
 
     useEffect(() => {
@@ -19,7 +18,7 @@ export function QuestionEditor({ question, onUpdateQuestion, onRemoveQuestion }:
         setAnswers(question.answers);
     }, [question]);
 
-    const handleAnswerChange = (index: number, field: keyof BaseAnswer, value: string | boolean): void => {
+    const handleAnswerChange = (index: number, field: keyof Answer, value: string | boolean): void => {
         const updatedAnswers = [...answers];
         updatedAnswers[index] = { ...updatedAnswers[index], [field]: value };
         setAnswers(updatedAnswers);
@@ -29,8 +28,8 @@ export function QuestionEditor({ question, onUpdateQuestion, onRemoveQuestion }:
         if (answers.length < 2) return;
 
         const removedAnswer = answers[index];
-        if ('id' in removedAnswer) {
-            setDeletedAnswerIds((prev) => [...prev, removedAnswer.id]);
+        if (removedAnswer.id !== undefined) {
+            setDeletedAnswerIds((prev) => [...prev, removedAnswer.id as number]);
         }
 
         setAnswers((prev) => prev.filter((_, i) => i !== index));

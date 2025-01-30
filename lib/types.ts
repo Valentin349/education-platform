@@ -3,15 +3,12 @@ export type Question = {
     topic_id: number;
     question_text: string;
     allow_multiple: boolean;
-    answers: StoredAnswer[];
+    answers: Answer[];
 };
 
-export type BaseAnswer = {
+export type Answer = {
+    id?: number;
+    question_id?: number;
     answer_text: string;
     is_correct: boolean;
-}
-
-export type StoredAnswer = BaseAnswer & {
-    id: number;
-    question_id: number;
 }

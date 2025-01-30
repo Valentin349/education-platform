@@ -39,7 +39,7 @@ export default function StudentViewQuiz({ questions, topicId }: ClientQuestionPr
             <fieldset>
                 <legend>{currentQuestion.question_text}</legend>
                 {currentQuestion.answers.map((answer, index) => (
-                    <label key={index} style={{ display: 'block', margin: '5px 0', cursor: 'pointer', }}>
+                    <label key={index}>
                         <input
                             type={currentQuestion.allow_multiple ? 'checkbox' : 'radio'}
                             name={`question-${currentQuestion.id}`}

@@ -1,5 +1,5 @@
 "use client"
-import { BaseAnswer, Question, StoredAnswer } from "@/lib/types";
+import { Answer, Question } from "@/lib/types";
 import Link from "next/link";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
@@ -11,21 +11,19 @@ type ClientQuestionProps = {
     questions: Question[];
     topicId: string;
 };
-
-type editableAnswer = BaseAnswer | StoredAnswer;
 // TODO refactor
 export default function TeacherViewQuiz({ questions: initialQuestions, topicId }: ClientQuestionProps) {
     const [questions, setQuestions] = useState<Question[]>(initialQuestions);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
     const [isCreatingQuestion, setIsCreatingQuestion] = useState<boolean>(false)
 
-    const handleUpdateQuestion = async (questionId: number, updatedText: string, updatedAnswers: editableAnswer[], deletedAnswerIds: number[]): Promise<void> => {
+    const handleUpdateQuestion = async (questionId: number, updatedText: string, updatedAnswers: Answer[], deletedAnswerIds: number[]): Promise<void> => {
         // TODO abstract function
         const supabase = createClient();
         try {
             const { error: questionError } = await supabase
                 .from("questions")
-                .update({ question_text: updatedText })
+                .update({ question_text: updatedText, allow_multiple: updatedAnswers.filter((answer) => answer.is_correct).length > 1 })
                 .eq("id", questionId);
 
             if (questionError) {
@@ -45,7 +43,7 @@ export default function TeacherViewQuiz({ questions: initialQuestions, topicId }
             }
 
             // Upsert ALL answers for a given question.
-            const existingAnswers = updatedAnswers.filter((answer) => 'id' in answer);
+            const existingAnswers = updatedAnswers.filter((answer) => answer.id !== null);
             const newAnswers = updatedAnswers
                 .filter((answer) => !('id' in answer))
                 .map((answer) => ({
@@ -54,6 +52,7 @@ export default function TeacherViewQuiz({ questions: initialQuestions, topicId }
                 }));
 
             if (existingAnswers.length > 0) {
+                console.log(existingAnswers);
                 const { error: upsertAnswerError } = await supabase
                     .from("answers")
                     .upsert(existingAnswers, { onConflict: "id" });
@@ -65,14 +64,24 @@ export default function TeacherViewQuiz({ questions: initialQuestions, topicId }
 
             if (newAnswers.length > 0) {
                 console.log(newAnswers);
-                const { error: insertAnswerError } = await supabase
+                const { error: insertAnswerError, data: insertedAnswers } = await supabase
                     .from('answers')
                     .insert(newAnswers);
 
                 if (insertAnswerError) {
                     throw new Error(`Error inserting answers: ${insertAnswerError.message}`);
                 }
+
+                console.log(insertedAnswers);
             }
+
+            setQuestions((prevQuestions) =>
+                prevQuestions.map((q) => 
+                    q.id === questionId
+                        ? {...q, question_text: updatedText, answers: updatedAnswers}
+                        : q
+                )   
+            );
 
             alert("Question and answers updated successfully!");
         } catch (error: any) {
