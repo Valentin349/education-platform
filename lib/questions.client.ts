@@ -1,8 +1,8 @@
 import { createClient } from "./supabase/client";
-import { BaseAnswer } from "./types";
+import { Answer } from "./types";
 
 export async function createQuestion(
-    topic_id: string, question_text: string, allow_multiple: boolean, answers: BaseAnswer[]
+    topic_id: string, question_text: string, allow_multiple: boolean, answers: Answer[]
 ): Promise<void> {
     const supabase = createClient();
 

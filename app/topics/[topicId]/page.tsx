@@ -1,6 +1,7 @@
 import VideoPlayer from '@/components/videoPlayer';
 import Link from 'next/link';
 import { getTopicById } from '@/lib/topics.server';
+import { Tiptap } from './components/Tiptap';
 
 const chapters = [
 	{ time: 0, label: "Introduction" },
@@ -19,6 +20,7 @@ export default async function TopicDetailsPage({ params }: { params: Promise<{ t
 				<h1>{topic.title}</h1>
 				<p>{topic.description}</p>
 				<VideoPlayer videoUrl={topic.video_url} chapters={chapters} />
+				<Tiptap/>
 				<div>
 					<Link href={'/topics'}>Topics</Link>
 					<Link href={`/topics/${topicId}/questions`}>Questions</Link>

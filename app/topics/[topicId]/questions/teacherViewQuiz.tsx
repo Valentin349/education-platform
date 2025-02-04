@@ -3,9 +3,9 @@ import { Answer, Question } from "@/lib/types";
 import Link from "next/link";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { CreateQuestion } from "./components/createQuestion";
-import { QuizNavigation } from "./components/quizNavigation";
-import { QuestionEditor } from "./components/questionEditor";
+import { CreateQuestion } from "./components/CreateQuestion";
+import { QuizNavigation } from "./components/QuizNavigation";
+import { QuestionEditor } from "./components/QuestionEditor";
 
 type ClientQuestionProps = {
     questions: Question[];
