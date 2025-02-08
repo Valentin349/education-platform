@@ -1,6 +1,7 @@
 "use client"
-import { EditorContent, useEditor } from "@tiptap/react";
+import { EditorContent, useEditor, BubbleMenu } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
+import { SlashCommand } from "./SlashCommand";
 
 export function Tiptap() {
     const editor = useEditor({
@@ -16,7 +17,9 @@ export function Tiptap() {
 
     return (
         <div>
-            <EditorContent editor={editor}/>
+            {editor && <BubbleMenu editor={editor}><div> BUBBLE MENU HERE</div></BubbleMenu>}
+            <EditorContent editor={editor} />
+            <SlashCommand editor={editor} />
         </div>
     );
 }
