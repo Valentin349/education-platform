@@ -48,7 +48,12 @@ export function QuestionEditor({ question, onUpdateQuestion, onRemoveQuestion }:
     return (
         <fieldset>
             <legend>
-                <input type="text" value={questionText} onChange={(e) => setQuestionText(e.target.value)} />
+                <input
+                    type="text"
+                    value={questionText} 
+                    onChange={(e) => setQuestionText(e.target.value)} 
+                    className="text-gray-500"
+                />
             </legend>
 
             {answers.map((answer, index) => (
@@ -60,6 +65,7 @@ export function QuestionEditor({ question, onUpdateQuestion, onRemoveQuestion }:
                         onChange={(e) =>
                             handleAnswerChange(index, "answer_text", e.target.value)
                         }
+                        className="text-gray-500"
                     />
                     <label>
                         <input
