@@ -2,7 +2,7 @@
 import { Question } from "@/lib/types";
 import Link from "next/link";
 import { useState } from "react";
-import { QuizNavigation } from "./components/QuizNavigation";
+import { QuizNavigation } from "./QuizNavigation";
 
 type SelectedAnswers = {
     [questionId: number]: number[];

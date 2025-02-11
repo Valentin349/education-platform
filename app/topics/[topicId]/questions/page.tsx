@@ -1,8 +1,8 @@
 import { getQuestionsByTopic } from "@/lib/questions.server";
 import { notFound } from "next/navigation";
-import TeacherViewQuiz from "./TeacherViewQuiz";
+import TeacherViewQuiz from "./components/TeacherViewQuiz";
 import { getCurrentUser } from "@/lib/mockUsers";
-import StudentViewQuiz from "./StudentViewQuiz";
+import StudentViewQuiz from "./components/StudentViewQuiz";
 
 
 export default async function QuizPage({ params }: { params: Promise<{ topicId: string }> }) {

@@ -15,17 +15,10 @@ export function SlashCommand({ editor }: SlashCommandProps) {
     const [command, setCommand] = useState('');
     const [position, setPosition] = useState<{ top: number; left: number } | null>(null);
 
-    if (!editor) return null;
-
-    const commands = [
-        { name: 'Heading 1', action: () => editor.chain().focus().toggleHeading({ level: 1 }).run() },
-        { name: 'Heading 2', action: () => editor.chain().focus().toggleHeading({ level: 2 }).run() },
-        { name: 'Bullet List', action: () => editor.chain().focus().toggleBulletList().run() },
-        { name: 'Numbered List', action: () => editor.chain().focus().toggleOrderedList().run() },
-        { name: 'Code Block', action: () => editor.chain().focus().toggleCodeBlock().run() },
-    ];
 
     useEffect(() => {
+        if (!editor) return;
+
         const handleKeyDown = (event: KeyboardEvent) => {
             if (!editor) return;
             if (event.key === '/') {
@@ -44,11 +37,20 @@ export function SlashCommand({ editor }: SlashCommandProps) {
         };
     }, [editor]);
 
+    if (!editor) return null;
+
+    const commands = [
+        { name: 'Heading 1', action: () => editor.chain().focus().toggleHeading({ level: 1 }).run() },
+        { name: 'Heading 2', action: () => editor.chain().focus().toggleHeading({ level: 2 }).run() },
+        { name: 'Bullet List', action: () => editor.chain().focus().toggleBulletList().run() },
+        { name: 'Numbered List', action: () => editor.chain().focus().toggleOrderedList().run() },
+        { name: 'Code Block', action: () => editor.chain().focus().toggleCodeBlock().run() },
+    ];
+
     const handleCommandClick = (action: () => void) => {
         action();
         setShowMenu(false);
     };
-
 
     return showMenu && position ? (
         <div

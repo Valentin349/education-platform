@@ -1,6 +1,6 @@
 import { getCurrentUser } from '@/lib/mockUsers';
 import Link from 'next/link';
-import CreateTopic from './CreateTopic';
+import CreateTopic from './components/CreateTopic';
 import { getAllTopics } from '@/lib/topics.server';
 
 export default async function TopicsPage() {
