@@ -16,12 +16,16 @@ export default async function TopicDetailsPage({ params }: { params: Promise<{ t
 		const topic = await getTopicById(topicId);
 
 		return (
-			<div>
+			<div className='grid place-items-center'>
 				<h1>{topic.title}</h1>
 				<p>{topic.description}</p>
-				<VideoPlayer videoUrl={topic.video_url} chapters={chapters} />
-				<Tiptap/>
-				<div>
+				<div className="w-full max-w-3xl">
+					<VideoPlayer videoUrl={topic.video_url} chapters={chapters} />
+				</div>
+				<div className='p-5'>
+					<Tiptap/>
+				</div>
+				<div >
 					<Link href={'/topics'}>Topics</Link>
 					<Link href={`/topics/${topicId}/questions`}>Questions</Link>
 				</div>

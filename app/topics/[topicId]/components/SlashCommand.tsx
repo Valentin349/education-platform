@@ -1,71 +1,89 @@
-import { Editor } from "@tiptap/react";
-import { ChangeEvent, useEffect, useState } from "react";
+import { Editor, Extension, Range } from "@tiptap/react";
+import Suggestion, { SuggestionOptions } from "@tiptap/suggestion";
+import RenderSuggestions from "./RenderSuggestions";
 
-type SlashCommandProps = {
-    editor: Editor | null;
+type CommandProps = {
+    editor: Editor;
+    range: Range;
+    props: any;
 }
 
-type Command = {
-    name: string;
-    action: () => void;
-}
+type CommandItem = {
+    title: string;
+    icon?: React.ReactNode;
+    command?: (props: { editor: Editor; range: Range }) => void;
+    disabled?: boolean;
+  }
+export default Extension.create({
+    name: 'slash-command',
 
-export function SlashCommand({ editor }: SlashCommandProps) {
-    const [showMenu, setShowMenu] = useState(false);
-    const [command, setCommand] = useState('');
-    const [position, setPosition] = useState<{ top: number; left: number } | null>(null);
+    addOptions() {
+        return {
+            suggestion: {
+                char: "/",
+                command: ({ editor, range, props }: CommandProps) => {
+                    props.command({ editor, range });
+                },
+                items: ({ query }: { query: string }) => {
+                    return [
+                        {
+                            title: 'Heading 1',
+                            command: ({ editor, range }: CommandProps) => {
+                                editor
+                                    .chain()
+                                    .focus()
+                                    .deleteRange(range)
+                                    .setNode('heading', { level: 1 })
+                                    .run()
+                            },
+                        },
+                        {
+                            title: 'Heading 2',
+                            command: ({ editor, range }: CommandProps) => {
+                                editor
+                                    .chain()
+                                    .focus()
+                                    .deleteRange(range)
+                                    .setNode('heading', { level: 2 })
+                                    .run()
+                            },
+                        },
+                        {
+                            title: 'Bold',
+                            command: ({ editor, range }: CommandProps) => {
+                                editor
+                                    .chain()
+                                    .focus()
+                                    .deleteRange(range)
+                                    .setMark('bold')
+                                    .run()
+                            },
+                        },
+                        {
+                            title: 'Italic',
+                            command: ({ editor, range }: CommandProps) => {
+                                editor
+                                    .chain()
+                                    .focus()
+                                    .deleteRange(range)
+                                    .setMark('italic')
+                                    .run()
+                            },
+                        },
+                    ].filter(item => item.title.toLowerCase().startsWith(query.toLowerCase())).slice(0, 10)
+                },
+            },
+            commandItems: [] as CommandItem[],
+        }
+    },
 
-
-    useEffect(() => {
-        if (!editor) return;
-
-        const handleKeyDown = (event: KeyboardEvent) => {
-            if (!editor) return;
-            if (event.key === '/') {
-                const { from } = editor.state.selection;
-                const coords = editor.view.coordsAtPos(from);
-                setPosition({ top: coords.top + 30, left: coords.left });
-                setShowMenu(true);
-            } else if (event.key === 'Escape') {
-                setShowMenu(false);
-            }
-        };
-
-        editor.view.dom.addEventListener('keydown', handleKeyDown);
-        return () => {
-            editor.view.dom.removeEventListener('keydown', handleKeyDown);
-        };
-    }, [editor]);
-
-    if (!editor) return null;
-
-    const commands = [
-        { name: 'Heading 1', action: () => editor.chain().focus().toggleHeading({ level: 1 }).run() },
-        { name: 'Heading 2', action: () => editor.chain().focus().toggleHeading({ level: 2 }).run() },
-        { name: 'Bullet List', action: () => editor.chain().focus().toggleBulletList().run() },
-        { name: 'Numbered List', action: () => editor.chain().focus().toggleOrderedList().run() },
-        { name: 'Code Block', action: () => editor.chain().focus().toggleCodeBlock().run() },
-    ];
-
-    const handleCommandClick = (action: () => void) => {
-        action();
-        setShowMenu(false);
-    };
-
-    return showMenu && position ? (
-        <div
-            className="absolute bg-white border rounded shadow-md p-2"
-            style={{ top: position.top, left: position.left }}
-        >
-            {commands.map((c, index) => (
-                <div
-                    key={index}
-                    className="p-2 hover:bg-gray-100 cursor-pointer"
-                    onClick={() => handleCommandClick(c.action)}
-                >
-                    {c.name}
-                </div>
-            ))}
-        </div>
-    ) : null;
-}
+    addProseMirrorPlugins() {
+        return [
+            Suggestion({
+                editor: this.editor,
+                ...this.options.suggestion,
+                render: RenderSuggestions,
+            } as SuggestionOptions),
+        ];
+    },
+})
