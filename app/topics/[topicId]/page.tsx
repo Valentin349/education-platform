@@ -1,7 +1,7 @@
 import VideoPlayer from '@/components/videoPlayer';
 import Link from 'next/link';
 import { getTopicById } from '@/lib/topics.server';
-import { Tiptap } from './components/Tiptap';
+import BlockNoteEditorComponent from './components/BlockNoteEditorComponent';
 
 const chapters = [
 	{ time: 0, label: "Introduction" },
@@ -22,9 +22,9 @@ export default async function TopicDetailsPage({ params }: { params: Promise<{ t
 				<div className="w-full max-w-3xl">
 					<VideoPlayer videoUrl={topic.video_url} chapters={chapters} />
 				</div>
-				<div className='p-5'>
-					<Tiptap/>
-				</div>
+
+				<BlockNoteEditorComponent/>
+						
 				<div >
 					<Link href={'/topics'}>Topics</Link>
 					<Link href={`/topics/${topicId}/questions`}>Questions</Link>
