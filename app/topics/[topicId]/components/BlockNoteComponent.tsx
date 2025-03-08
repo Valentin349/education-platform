@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import "@blocknote/mantine/style.css";
 
-type BlockNoteEditorClientProps = {
+type BlockNoteComponentProps = {
     topicId: string;
 };
 
@@ -18,7 +18,7 @@ const getCustomSlashMenuItems = (editor: BlockNoteEditor): DefaultReactSuggestio
 
 const supabase = createClient();
 
-export default function BlockNoteEditorClient({ topicId }: BlockNoteEditorClientProps) {
+export default function BlockNoteComponent({ topicId }: BlockNoteComponentProps) {
     const [loading, setLoading] = useState<boolean>(true);
     const editor = useCreateBlockNote({});
 

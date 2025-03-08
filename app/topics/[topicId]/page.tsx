@@ -1,7 +1,7 @@
 import VideoPlayer from '@/components/videoPlayer';
 import Link from 'next/link';
 import { getTopicById } from '@/lib/topics.server';
-import BlockNoteEditorComponent from './components/BlockNoteEditorComponent';
+import BlockNoteEditorComponent from './components/BlockNoteWrapper';
 
 const chapters = [
 	{ time: 0, label: "Introduction" },
