@@ -5,6 +5,7 @@ import { BlockNoteEditor, filterSuggestionItems } from "@blocknote/core";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import "@blocknote/mantine/style.css";
+import { getNotesFromTopic, updateTopicNotes } from "@/lib/topics.client";
 
 type BlockNoteComponentProps = {
     topicId: string;
@@ -17,8 +18,6 @@ const getCustomSlashMenuItems = (editor: BlockNoteEditor): DefaultReactSuggestio
     );
 };
 
-const supabase = createClient();
-
 export default function BlockNoteComponent({ topicId, readonly }: BlockNoteComponentProps) {
     const [loading, setLoading] = useState<boolean>(true);
     const [htmlContent, setHtmlContent] = useState<string>("");
@@ -26,40 +25,30 @@ export default function BlockNoteComponent({ topicId, readonly }: BlockNoteCompo
 
     const loadContent = async () => {
         setLoading(true);
-        const { data, error } = await supabase
-            .from('topics')
-            .select('notes')
-            .eq('id', topicId)
-            .single();
-
-        if (error) {
-            console.error('Error loading editor content:', error);
-        } else {
+        try {
+            const data = await getNotesFromTopic(topicId);
             const notes = data?.notes ?? [];
 
             editor.replaceBlocks(editor.document, notes);
 
             if (readonly) {
-                const html = await editor.blocksToFullHTML(editor.document); // Get HTML asynchronously
-                setHtmlContent(html); // Update the HTML content state
+                const html = await editor.blocksToFullHTML(editor.document);
+                setHtmlContent(html);
             }
+        } catch (error: any) {
+            console.error(error.message);
         }
 
         setLoading(false);
     }
 
-    const saveContent = async () => {
+    const saveContent = () => {
         const notes = editor.document;
-
-        const { error } = await supabase
-            .from('topics')
-            .update({ notes })
-            .eq('id', topicId);
-
-        if (error) {
-            console.error('Error saving editor content:', error);
-        } else {
+        try {
+            updateTopicNotes(topicId, notes);
             alert('successfully saved notes');
+        } catch (error: any) {
+            console.error(error.message);
         }
     }
 
