@@ -1,9 +1,9 @@
 "use client"
 import dynamic from "next/dynamic"
+import { getCurrentUser } from '@/lib/mockUsers';
 
 type BlockNoteWrapperProps = {
     topicId: string;
-    readonly: boolean;
 };
 
 const BlockNoteComponent = dynamic(
@@ -11,10 +11,14 @@ const BlockNoteComponent = dynamic(
     { ssr: false }
 );
 
-export default function BlockNoteWrapper({ topicId, readonly }: BlockNoteWrapperProps) {
+export default function BlockNoteWrapper({ topicId }: BlockNoteWrapperProps) {
+    const currentUser = getCurrentUser();
     return (
         <div className="w-full max-w-3xl p-5">
-            <BlockNoteComponent topicId={topicId} readonly={readonly} />
+            {currentUser.role === 'teacher' ?
+                <BlockNoteComponent topicId={topicId} readonly={false} />:
+                <BlockNoteComponent topicId={topicId} readonly={true} />
+            }
         </div>
     )
 }
