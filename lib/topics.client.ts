@@ -1,4 +1,3 @@
-import { Block } from "@blocknote/core";
 import { createClient } from "./supabase/client";
 
 const supabase = createClient();

@@ -3,9 +3,8 @@ import { BlockNoteView } from "@blocknote/mantine";
 import { DefaultReactSuggestionItem, getDefaultReactSlashMenuItems, SuggestionMenuController, useCreateBlockNote } from "@blocknote/react";
 import { BlockNoteEditor, filterSuggestionItems } from "@blocknote/core";
 import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
-import "@blocknote/mantine/style.css";
 import { getNotesFromTopic, updateTopicNotes } from "@/lib/topics.client";
+import "@blocknote/mantine/style.css";
 
 type BlockNoteComponentProps = {
     topicId: string;
