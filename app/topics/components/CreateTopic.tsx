@@ -1,5 +1,4 @@
 'use client'
-
 import RoleBasedView from "@/components/RoleBasedView";
 import { createTopic } from "@/lib/topics.client";
 import { useState } from "react";

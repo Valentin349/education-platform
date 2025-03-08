@@ -23,7 +23,7 @@ export default async function TopicDetailsPage({ params }: { params: Promise<{ t
 					<VideoPlayer videoUrl={topic.video_url} chapters={chapters} />
 				</div>
 
-				<BlockNoteEditorComponent/>
+				<BlockNoteEditorComponent topicId={topicId} />
 						
 				<div >
 					<Link href={'/topics'}>Topics</Link>

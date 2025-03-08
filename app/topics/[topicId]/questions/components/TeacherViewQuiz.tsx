@@ -12,13 +12,14 @@ type ClientQuestionProps = {
     topicId: string;
 };
 
+const supabase = createClient();
+
 export default function TeacherViewQuiz({ questions: initialQuestions, topicId }: ClientQuestionProps) {
     const [questions, setQuestions] = useState<Question[]>(initialQuestions);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
     const [isCreatingQuestion, setIsCreatingQuestion] = useState<boolean>(false)
 
     const handleUpdateQuestion = async (originalQuestion: Question, updatedText: string, updatedAnswers: Answer[], deletedAnswerIds: number[]): Promise<void> => {
-        const supabase = createClient();
         try {
             if (updatedText !== originalQuestion.question_text) {
                 const { error: questionError } = await supabase
@@ -88,7 +89,6 @@ export default function TeacherViewQuiz({ questions: initialQuestions, topicId }
     }
 
     const handleRemoveQuestion = async (questionId: number): Promise<void> => {
-        const supabase = createClient();
         try {
             const { error } = await supabase
                 .from("questions")
@@ -107,7 +107,6 @@ export default function TeacherViewQuiz({ questions: initialQuestions, topicId }
     }
 
     const refreshQuestions = async (): Promise<void> => {
-        const supabase = createClient();
         const { data: updatedQuestions, error } = await supabase
             .from("questions")
             .select(`
