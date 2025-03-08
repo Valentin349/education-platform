@@ -8,6 +8,7 @@ import "@blocknote/mantine/style.css";
 
 type BlockNoteComponentProps = {
     topicId: string;
+    readonly: boolean;
 };
 
 const getCustomSlashMenuItems = (editor: BlockNoteEditor): DefaultReactSuggestionItem[] => {
@@ -18,8 +19,9 @@ const getCustomSlashMenuItems = (editor: BlockNoteEditor): DefaultReactSuggestio
 
 const supabase = createClient();
 
-export default function BlockNoteComponent({ topicId }: BlockNoteComponentProps) {
+export default function BlockNoteComponent({ topicId, readonly }: BlockNoteComponentProps) {
     const [loading, setLoading] = useState<boolean>(true);
+    const [htmlContent, setHtmlContent] = useState<string>("");
     const editor = useCreateBlockNote({});
 
     const loadContent = async () => {
@@ -36,6 +38,11 @@ export default function BlockNoteComponent({ topicId }: BlockNoteComponentProps)
             const notes = data?.notes ?? [];
 
             editor.replaceBlocks(editor.document, notes);
+
+            if (readonly) {
+                const html = await editor.blocksToFullHTML(editor.document); // Get HTML asynchronously
+                setHtmlContent(html); // Update the HTML content state
+            }
         }
 
         setLoading(false);
@@ -59,6 +66,15 @@ export default function BlockNoteComponent({ topicId }: BlockNoteComponentProps)
     useEffect(() => {
         loadContent();
     }, []);
+
+    if (readonly) {
+        return (
+            <div 
+              className="prose max-w-none" 
+              dangerouslySetInnerHTML={{ __html: htmlContent }}
+            />
+          );
+    }
 
     return (
         <div>
