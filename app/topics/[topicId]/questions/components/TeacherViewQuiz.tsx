@@ -6,6 +6,8 @@ import { createClient } from "@/lib/supabase/client";
 import { CreateQuestion } from "./CreateQuestion";
 import { QuizNavigation } from "./QuizNavigation";
 import { QuestionEditor } from "./QuestionEditor";
+import { updateSingleQuestion } from "@/lib/questions.client";
+import { deleteAnswers, insertNewAnswers, upsertAnswers } from "@/lib/answers.client";
 
 type ClientQuestionProps = {
     questions: Question[];
@@ -22,25 +24,12 @@ export default function TeacherViewQuiz({ questions: initialQuestions, topicId }
     const handleUpdateQuestion = async (originalQuestion: Question, updatedText: string, updatedAnswers: Answer[], deletedAnswerIds: number[]): Promise<void> => {
         try {
             if (updatedText !== originalQuestion.question_text) {
-                const { error: questionError } = await supabase
-                    .from("questions")
-                    .update({ question_text: updatedText, allow_multiple: updatedAnswers.filter((answer) => answer.is_correct).length > 1 })
-                    .eq("id", originalQuestion.id);
-
-                if (questionError) {
-                    throw new Error(`Error updating question: ${questionError.message}`);
-                }
+                await updateSingleQuestion(updatedText, updatedAnswers.filter((answer) => answer.is_correct).length > 1, originalQuestion.id);
             }
+            
             // Delete answers before updating answers
             if (deletedAnswerIds.length > 0) {
-                const { error: deleteError } = await supabase
-                    .from("answers")
-                    .delete()
-                    .in("id", deletedAnswerIds);
-
-                if (deleteError) {
-                    throw new Error(`Error updating question: ${deleteError.message}`);
-                }
+                await deleteAnswers(deletedAnswerIds);
             }
 
             // Upsert ALL answers for a given question.
@@ -53,6 +42,7 @@ export default function TeacherViewQuiz({ questions: initialQuestions, topicId }
                 }));
 
             if (existingAnswers.length > 0) {
+                await upsertAnswers(existingAnswers);
                 const { error: upsertAnswerError } = await supabase
                     .from("answers")
                     .upsert(existingAnswers, { onConflict: "id" });
@@ -63,14 +53,7 @@ export default function TeacherViewQuiz({ questions: initialQuestions, topicId }
             }
 
             if (newAnswers.length > 0) {
-                const { error: insertAnswerError } = await supabase
-                    .from('answers')
-                    .insert(newAnswers);
-
-                if (insertAnswerError) {
-                    throw new Error(`Error inserting answers: ${insertAnswerError.message}`);
-                }
-
+                await insertNewAnswers(newAnswers);
             }
 
             setQuestions((prevQuestions) =>

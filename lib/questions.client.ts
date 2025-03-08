@@ -1,11 +1,11 @@
 import { createClient } from "./supabase/client";
 import { Answer } from "./types";
 
+const supabase = createClient();
+
 export async function createQuestion(
     topic_id: string, question_text: string, allow_multiple: boolean, answers: Answer[]
 ): Promise<void> {
-    const supabase = createClient();
-
     const { data: question, error: questionError } = await supabase
         .from('questions')
         .insert([{ topic_id, question_text, allow_multiple }])
@@ -24,4 +24,15 @@ export async function createQuestion(
         .insert(answersWithQuestionId);
 
     if (answersError) throw new Error(`Error inserting answers: ${answersError.message}`);
+}
+
+export async function updateSingleQuestion(qeustionText: string, allowMultiple: boolean, questionId: number): Promise<void> {
+    const { error: questionError } = await supabase
+        .from("questions")
+        .update({ question_text: qeustionText, allow_multiple: allowMultiple })
+        .eq("id", questionId);
+
+    if (questionError) {
+        throw new Error(`Error updating question: ${questionError.message}`);
+    }
 }
