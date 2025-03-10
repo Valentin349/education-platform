@@ -2,6 +2,7 @@ import { getCurrentUser } from '@/lib/mockUsers';
 import Link from 'next/link';
 import CreateTopic from './components/CreateTopic';
 import { getAllTopics } from '@/lib/topics.server';
+import { logout } from '../login/actions';
 
 export default async function TopicsPage() {
     try {
@@ -12,6 +13,9 @@ export default async function TopicsPage() {
             <div>
                 <h1>Topics</h1>
                 <h2>Hello {user.role}</h2>
+                <button onClick={logout} className="btn btn-danger">
+                    Logout
+                </button>
                 <div>
                     {topics?.map((topic) => (
                         <Link key={topic.id} href={`./topics/${topic.id}`} passHref>
