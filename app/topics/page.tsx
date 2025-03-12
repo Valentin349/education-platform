@@ -2,7 +2,7 @@ import { getCurrentUser } from '@/lib/mockUsers';
 import Link from 'next/link';
 import CreateTopic from './components/CreateTopic';
 import { getAllTopics } from '@/lib/topics.server';
-import { logout } from '../login/actions';
+import { logout } from '../(auth)/actions';
 
 export default async function TopicsPage() {
     try {
