@@ -19,9 +19,9 @@ export default function LoginForm() {
 
     return (
         <div>
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4">
                 <div>
-                    <label className="w-full flex flex-col gap-4">
+                    <label  className="block text-sm font-medium text-gray-200">
                         Email
                     </label>
                     <input 
@@ -33,7 +33,7 @@ export default function LoginForm() {
                     />
                 </div>
                 <div>
-                    <label>
+                    <label className="block text-sm font-medium text-gray-200">
                         Password
                     </label>
                     <input
@@ -45,10 +45,10 @@ export default function LoginForm() {
                     />
                 </div>
 
-                <div>
+                <div className="mt-4">
                     <AuthButton type="Login" loading={loading} />
                 </div>
-                {error && <p>{error}</p>}
+                {error && <p className="text-red-500">{error}</p>}
             </form>
         </div>
     );
