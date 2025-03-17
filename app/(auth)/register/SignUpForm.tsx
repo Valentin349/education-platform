@@ -19,7 +19,7 @@ export default function SignUpForm() {
         const result = await signup(formData);
 
         if (result.status === 'Success') {
-            router.push('/');
+            router.push('/login');
         } else {
             setError(result.status);
         }
