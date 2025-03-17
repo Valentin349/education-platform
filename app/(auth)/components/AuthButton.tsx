@@ -1,5 +1,5 @@
 type AuthButtonProps = {
-    type: 'Login' | 'SignUp' | 'ResetPassword' | 'ForgotPassword';
+    type: 'Login' | 'SignUp' | 'Reset Password' | 'Forgot Password';
     loading: boolean;
 }
 

@@ -1,10 +1,13 @@
 "use client";
 import React, { useState } from "react";
 import AuthButton from "../components/AuthButton";
-import { forgotPassword } from "../actions";
+import { useRouter, useSearchParams } from "next/navigation";
+import { resetPassword } from "../actions";
 
-export default function ForgotPassword() {
+const ResetPassword = () => {
+    const searchParams = useSearchParams();
     const [error, setError] = useState<string | null>(null);
+    const router = useRouter();
     const [loading, setLoading] = useState<boolean>(false);
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -13,34 +16,35 @@ export default function ForgotPassword() {
         setError(null);
 
         const formData = new FormData(event.currentTarget);
-        const result = await forgotPassword(formData);
+        const result = await resetPassword(formData, searchParams.get('code') as string);
 
         if (result.status === 'Success') {
-            alert('Password reset link sent to your email');
+            router.push('/');
         } else {
             setError(result.status);
         }
 
         setLoading(false);
     };
+
     return (
         <div>
             <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4">
                 <div>
                     <label className="block text-sm font-medium text-gray-200">
-                        Email
+                        New Password
                     </label>
                     <input
-                        type="email"
-                        placeholder="Email"
-                        id="Email"
-                        name="email"
+                        type="password"
+                        placeholder="Password"
+                        id="Password"
+                        name="password"
                         className="mt-1 w-full px-4 p-2  h-10 rounded-md border border-gray-200 bg-white text-sm text-gray-700"
                     />
                 </div>
 
                 <div className="mt-4">
-                    <AuthButton type="Forgot Password" loading={loading} />
+                    <AuthButton type="Reset Password" loading={loading} />
                 </div>
                 {error && <p className="text-red-500">{error}</p>}
             </form>
@@ -48,3 +52,4 @@ export default function ForgotPassword() {
     );
 };
 
+export default ResetPassword;
