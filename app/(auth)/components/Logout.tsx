@@ -1,5 +1,6 @@
 'use client'
 import { useState } from "react";
+import { logout } from "../actions";
 
 export default function Logout() {
     const [loading, setLoading] = useState<boolean>();
@@ -7,7 +8,7 @@ export default function Logout() {
     const handleLogout = async () => {
         setLoading(true);
 
-        // implment handle logout
+        await logout();
 
         setLoading(false);
     }
@@ -15,7 +16,7 @@ export default function Logout() {
     return (
         <div>
             <button onClick={handleLogout}>
-                {loading ? 'Signing out...' : 'Sign out'}
+                {loading ? 'Logging out...' : 'Log out'}
             </button>
         </div>
     );

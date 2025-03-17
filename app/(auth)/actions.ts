@@ -71,6 +71,12 @@ export async function signup(formData: FormData) {
 
 export async function logout() {
     const supabase = await createClient()
-    await supabase.auth.signOut()
-    redirect('/login') // Redirect to login page after logout
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+        redirect('/error');
+    }
+
+    revalidatePath('/', 'layout');
+    redirect('/login');
 }
