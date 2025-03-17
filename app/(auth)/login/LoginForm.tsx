@@ -1,18 +1,27 @@
 'use client'
 import { useState } from "react";
 import AuthButton from "../components/AuthButton";
+import { login } from "../actions";
+import { useRouter } from "next/navigation";
 
 export default function LoginForm() {
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
-
+    const router = useRouter();
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         setLoading(true);
         setError(null);
 
-        // implment submit logic here
+        const formData = new FormData(event.currentTarget);
+        const result = await login(formData);
+
+        if (result.status === 'Success') {
+            router.push('/');
+        } else {
+            setError(result.status);
+        }
 
         setLoading(false);
     }
@@ -21,10 +30,10 @@ export default function LoginForm() {
         <div>
             <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4">
                 <div>
-                    <label  className="block text-sm font-medium text-gray-200">
+                    <label className="block text-sm font-medium text-gray-200">
                         Email
                     </label>
-                    <input 
+                    <input
                         type="email"
                         placeholder="Email"
                         id="Email"
