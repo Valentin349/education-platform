@@ -24,6 +24,26 @@ export async function login(formData: FormData) {
         };
     }
 
+    const { data: existingUser } = await supabase.from('user_profiles')
+        .select('*')
+        .eq('email', credentials.email)
+        .limit(1)
+        .single();
+
+    if (!existingUser) {
+        const { error: insertError } = await supabase.from('user_profiles').insert({
+            email: data?.user.email,
+            username: data?.user?.user_metadata.username,
+            role: 'teacher',
+        });
+
+        if (insertError) {
+            return {
+                status: insertError?.message,
+                user: null,
+            };
+        }
+    }
     revalidatePath('/', 'layout')
     return {
         status: 'Success',
@@ -79,4 +99,15 @@ export async function logout() {
 
     revalidatePath('/', 'layout');
     redirect('/login');
+}
+
+export async function getUserSession() {
+    const supabase = await createClient();
+    const { data, error } = await supabase.auth.getUser();
+    
+    if (error) {
+        return null;
+    }
+
+    return { status: 'Success', user: data?.user };
 }
