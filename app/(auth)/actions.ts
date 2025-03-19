@@ -155,7 +155,7 @@ export async function forgotPassword(formData: FormData) {
 
     const email = formData.get('email')?.toString().trim();
 
-    const parsedEmail = emailSchema.safeParse({ email });
+    const parsedEmail = emailSchema.safeParse(email);
     if (!parsedEmail.success) {
         return { status: parsedEmail.error.issues[0].message };
     }
@@ -175,7 +175,7 @@ export async function resetPassword(formData: FormData, code: string) {
     const supabase = await createClient();
 
     const password = formData.get('password')?.toString();
-    const parsedPassword = passwordSchema.safeParse({ password });
+    const parsedPassword = passwordSchema.safeParse(password);
     if (!parsedPassword.success) {
         return { status: parsedPassword.error.issues[0].message };
     }

@@ -1,31 +1,44 @@
 "use client";
 import React, { useState } from "react";
 import AuthButton from "../components/AuthButton";
-import { useRouter } from "next/navigation";
 import { signup } from "../actions";
 
 export default function SignUpForm() {
     const [error, setError] = useState<string | null>(null);
+    const [success, setSuccess] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(false);
-    const router = useRouter();
 
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         setLoading(true);
         setError(null);
+        setSuccess(false);
+
 
         const formData = new FormData(event.currentTarget);
         const result = await signup(formData);
 
+
         if (result.status === 'success') {
-            router.push('/login');
+            setSuccess(true);
         } else {
             setError(result.status);
         }
 
         setLoading(false);
     };
+
+    if (success) {
+        return (
+            <div className="w-full flex mt-20 justify-center">
+                <p className="text-xl w-full mb-6">
+                    Verify your email we sent to finish signup.
+                </p>
+            </div>
+        );
+    }
+
     return (
         <div>
             <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4">
