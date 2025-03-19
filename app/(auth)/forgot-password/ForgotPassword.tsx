@@ -15,7 +15,7 @@ export default function ForgotPassword() {
         const formData = new FormData(event.currentTarget);
         const result = await forgotPassword(formData);
 
-        if (result.status === 'Success') {
+        if (result.status === 'success') {
             alert('Password reset link sent to your email');
         } else {
             setError(result.status);

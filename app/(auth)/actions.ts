@@ -2,20 +2,51 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-
 import { createClient } from '@/lib/supabase/server'
 import { headers } from 'next/headers'
+import { z } from 'zod';
+
+
+const emailSchema = z.string().trim().email({ message: "Invalid email format" });
+
+const passwordSchema = z.string()
+    .min(8, { message: "Password must be at least 8 characters long" })
+    .regex(/[A-Z]/, { message: "Password must contain at least one uppercase letter" })
+    .regex(/[0-9]/, { message: "Password must contain at least one number" })
+    .regex(/[^A-Za-z0-9]/, { message: "Password must contain at least one special character" })
+    .regex(/^\S*$/, { message: "Password must not contain spaces" });
+
+const usernameSchema = z.string()
+    .trim()
+    .min(3, { message: "Username must be at least 3 characters" })
+    .max(20, { message: "Username must be at most 20 characters" })
+    .regex(/^[a-zA-Z0-9]+$/, { message: "Username must only contain letters and numbers" });
+
+const loginSchema = z.object({
+    email: emailSchema,
+    password: passwordSchema,
+});
+
+const signupSchema = z.object({
+    username: usernameSchema,
+    email: emailSchema,
+    password: passwordSchema,
+});
 
 export async function login(formData: FormData) {
     const supabase = await createClient()
 
-    // type-casting here for convenience
-    // TODO: validate your inputs
     const credentials = {
-        email: formData.get('email') as string,
-        password: formData.get('password') as string,
+        email: formData.get('email')?.toString().trim(),
+        password: formData.get('password')?.toString().trim(),
     }
-    const { error, data } = await supabase.auth.signInWithPassword(credentials)
+
+    const parsedCredentials = loginSchema.safeParse(credentials);
+    if (!parsedCredentials.success) {
+        return { status: 'Password does not match', user: null };
+    }
+
+    const { error, data } = await supabase.auth.signInWithPassword(parsedCredentials.data)
 
     if (error) {
         return {
@@ -30,6 +61,7 @@ export async function login(formData: FormData) {
         .limit(1)
         .single();
 
+    // TODO: sets all new accounts as teacher, need other users too.
     if (!existingUser) {
         const { error: insertError } = await supabase.from('user_profiles').insert({
             email: data?.user.email,
@@ -46,7 +78,7 @@ export async function login(formData: FormData) {
     }
     revalidatePath('/', 'layout')
     return {
-        status: 'Success',
+        status: 'success',
         user: data.user,
     };
 }
@@ -55,17 +87,22 @@ export async function signup(formData: FormData) {
     const supabase = await createClient()
 
     const credentials = {
-        username: formData.get('username') as string,
-        email: formData.get('email') as string,
-        password: formData.get('password') as string,
+        username: formData.get('username')?.toString().trim(),
+        email: formData.get('email')?.toString().trim(),
+        password: formData.get('password')?.toString(),
+    }
+
+    const parsedCredentials = signupSchema.safeParse(credentials);
+    if (!parsedCredentials.success) {
+        return { status: parsedCredentials.error.issues[0].message, user: null };
     }
 
     const { error, data } = await supabase.auth.signUp({
-        email: credentials.email,
-        password: credentials.password,
+        email: parsedCredentials.data.email,
+        password: parsedCredentials.data.password,
         options: {
             data: {
-                username: credentials.username,
+                username: parsedCredentials.data.username,
             }
         }
     });
@@ -84,7 +121,7 @@ export async function signup(formData: FormData) {
 
     revalidatePath('/', 'layout')
     return {
-        status: 'Success',
+        status: 'success',
         user: data.user,
     };
 }
@@ -109,32 +146,39 @@ export async function getUserSession() {
         return null;
     }
 
-    return { status: 'Success', user: data?.user };
+    return { status: 'success', user: data?.user };
 }
 
 export async function forgotPassword(formData: FormData) {
     const supabase = await createClient();
     const origin = (await headers()).get('origin');
 
-    const { error } = await supabase.auth.resetPasswordForEmail(
-        formData.get('email') as string,
-        {
-            redirectTo: `${origin}/reset-password`
-        }
-    );
+    const email = formData.get('email')?.toString().trim();
 
-    if (error) {
-        return {
-            status: error?.message,
-            user: null,
-        };
+    const parsedEmail = emailSchema.safeParse({ email });
+    if (!parsedEmail.success) {
+        return { status: parsedEmail.error.issues[0].message };
     }
 
-    return { status: 'Success' }
+    const { error } = await supabase.auth.resetPasswordForEmail(parsedEmail.data, {
+        redirectTo: `${origin}/reset-password`
+    });
+
+    if (error) {
+        return { status: error?.message, user: null };
+    }
+
+    return { status: 'success' }
 }
 
 export async function resetPassword(formData: FormData, code: string) {
     const supabase = await createClient();
+
+    const password = formData.get('password')?.toString();
+    const parsedPassword = passwordSchema.safeParse({ password });
+    if (!parsedPassword.success) {
+        return { status: parsedPassword.error.issues[0].message };
+    }
 
     const { error: codeError } = await supabase.auth.exchangeCodeForSession(code);
 
@@ -143,12 +187,12 @@ export async function resetPassword(formData: FormData, code: string) {
     }
 
     const { error } = await supabase.auth.updateUser({
-        password: formData.get('password') as string,
+        password: parsedPassword.data,
     });
 
     if (error) {
         return { status: error?.message };
     }
 
-    return { status: 'Success' };
+    return { status: 'success' };
 }

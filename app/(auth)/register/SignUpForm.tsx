@@ -18,7 +18,7 @@ export default function SignUpForm() {
         const formData = new FormData(event.currentTarget);
         const result = await signup(formData);
 
-        if (result.status === 'Success') {
+        if (result.status === 'success') {
             router.push('/login');
         } else {
             setError(result.status);

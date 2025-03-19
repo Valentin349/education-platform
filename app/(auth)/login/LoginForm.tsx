@@ -17,7 +17,7 @@ export default function LoginForm() {
         const formData = new FormData(event.currentTarget);
         const result = await login(formData);
 
-        if (result.status === 'Success') {
+        if (result.status === 'success') {
             router.push('/');
         } else {
             setError(result.status);
