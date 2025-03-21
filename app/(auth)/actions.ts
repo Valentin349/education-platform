@@ -49,10 +49,17 @@ export async function login(formData: FormData) {
     const { error, data } = await supabase.auth.signInWithPassword(parsedCredentials.data)
 
     if (error) {
-        return {
-            status: error?.message,
-            user: null
-        };
+        if (error.message.includes("Invalid login credentials")) {
+            return { status: "Invalid email or password.", user: null };
+        }
+        if (error.message.includes("Email not confirmed")) {
+            return { status: "Please verify your email before logging in.", user: null };
+        }
+        if (error.message.includes("Too many failed login attempts")) {
+            return { status: "Too many failed attempts. Please try again later.", user: null };
+        }
+
+        return { status: "Login failed. Please try again.", user: null };
     }
 
     const { data: existingUser } = await supabase.from('user_profiles')
@@ -108,15 +115,15 @@ export async function signup(formData: FormData) {
     });
 
     if (error) {
-        return {
-            status: error?.message,
-            user: null
-        };
+        if (error.message.includes("already registered")) {
+            return { status: "An account with this email already exists.", user: null };
+        }
+        return { status: "Sign-up failed. Please try again later.", user: null };
+
     } else if (data?.user?.identities?.length === 0) {
-        return {
-            status: "User with this email already exists.",
-            user: null,
-        };
+        if (data?.user?.identities?.length === 0) {
+            return { status: "An account with this email already exists.", user: null };
+        }
     }
 
     revalidatePath('/', 'layout')
@@ -165,7 +172,7 @@ export async function forgotPassword(formData: FormData) {
     });
 
     if (error) {
-        return { status: error?.message, user: null };
+        return { status: 'Something went wrong. Try again later.' };
     }
 
     return { status: 'success' }
@@ -183,15 +190,16 @@ export async function resetPassword(formData: FormData, code: string) {
     const { error: codeError } = await supabase.auth.exchangeCodeForSession(code);
 
     if (codeError) {
-        return { status: codeError?.message };
+        return { status: "Invalid or expired reset link. Please request a new one." };
     }
 
     const { error } = await supabase.auth.updateUser({
         password: parsedPassword.data,
     });
 
+    // can ignore password too weak, as we parse the password, so give general error message.
     if (error) {
-        return { status: error?.message };
+        return { status: "Could not update password. Please try again later." };
     }
 
     return { status: 'success' };
