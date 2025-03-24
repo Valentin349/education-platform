@@ -1,6 +1,4 @@
 'use client'
-
-import RoleBasedView from "@/components/RoleBasedView";
 import { useState } from "react"
 import { createQuestion } from "@/lib/questions.client";
 import { Answer } from "@/lib/types";
@@ -82,31 +80,29 @@ export function CreateQuestion({ topicId, onQuestionCreated }: CreateQuestionPro
     }
 
     return (
-        <RoleBasedView allowedRoles={['teacher']}>
-            <div>
-                <form>
-                    <input type="text" name="question" placeholder="Question" value={questionText} onChange={(e) => setQuestionText(e.target.value.trim())} />
-                    {answers.map((answer, index) => (
-                        <div key={index}>
-                            <input type="text" placeholder={`Answer ${index + 1}`} value={answer.answer_text} onChange={(e) => updateAnswer(index, e.target.value)} />
-                            <label>
-                                Correct
-                                <input type="checkbox" checked={answer.is_correct} onChange={() => toggleCorrectAnswer(index)} />
-                            </label>
-                            <button onClick={(event) => removeAnswer(index, event)} disabled={answers.length <= 2}>remove</button>
-                        </div>
-                    ))}
+        <div>
+            <form>
+                <input type="text" name="question" placeholder="Question" value={questionText} onChange={(e) => setQuestionText(e.target.value.trim())} />
+                {answers.map((answer, index) => (
+                    <div key={index}>
+                        <input type="text" placeholder={`Answer ${index + 1}`} value={answer.answer_text} onChange={(e) => updateAnswer(index, e.target.value)} />
+                        <label>
+                            Correct
+                            <input type="checkbox" checked={answer.is_correct} onChange={() => toggleCorrectAnswer(index)} />
+                        </label>
+                        <button onClick={(event) => removeAnswer(index, event)} disabled={answers.length <= 2}>remove</button>
+                    </div>
+                ))}
 
-                    {/* Add answer button */}
-                    <button type="button" onClick={handleAddAnswer} disabled={answers.length >= 4}>
-                        Add Answer
-                    </button>
+                {/* Add answer button */}
+                <button type="button" onClick={handleAddAnswer} disabled={answers.length >= 4}>
+                    Add Answer
+                </button>
 
-                    <button type="button" onClick={handleSubmit}>
-                        {isLoading ? 'Loading...' : 'Create'}
-                    </button>
-                </form>
-            </div>
-        </RoleBasedView>
+                <button type="button" onClick={handleSubmit}>
+                    {isLoading ? 'Loading...' : 'Create'}
+                </button>
+            </form>
+        </div>
     );
 }

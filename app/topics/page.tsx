@@ -1,20 +1,23 @@
-import { getCurrentUser } from '@/lib/mockUsers';
 import Link from 'next/link';
 import CreateTopic from './components/CreateTopic';
 import { getAllTopics } from '@/lib/topics.server';
-import { logout } from '../(auth)/actions';
 import Logout from '../(auth)/components/Logout';
+import { getUserProfile } from '@/lib/user';
 
 export default async function TopicsPage() {
     try {
-        const user = getCurrentUser();
+        const { user, profile } = await getUserProfile();
         const topics = await getAllTopics();
+
 
         return (
             <div>
                 <h1>Topics</h1>
-                <h2>Hello {user.role}</h2>
-                <Logout/>
+                <h2>Hello {profile?.role ?? 'student'}</h2>
+                {user && (
+                    <Logout />
+                )}
+                
                 <div>
                     {topics?.map((topic) => (
                         <Link key={topic.id} href={`./topics/${topic.id}`} passHref>
@@ -27,7 +30,7 @@ export default async function TopicsPage() {
                 </div>
 
                 {/*Teacher only Features*/}
-                {user.role === 'teacher' && (
+                {profile?.role === 'teacher' && (
                     <CreateTopic />
                 )}
             </div>

@@ -62,16 +62,15 @@ export async function login(formData: FormData) {
         return { status: "Login failed. Please try again.", user: null };
     }
 
-    const { data: existingUser } = await supabase.from('user_profiles')
+    const { data: existingUser } = await supabase.from('profiles')
         .select('*')
-        .eq('email', credentials.email)
+        .eq('id', data?.user?.id)
         .limit(1)
         .single();
 
     // TODO: sets all new accounts as teacher, need other users too.
     if (!existingUser) {
-        const { error: insertError } = await supabase.from('user_profiles').insert({
-            email: data?.user.email,
+        const { error: insertError } = await supabase.from('profiles').insert({
             username: data?.user?.user_metadata.username,
             role: 'teacher',
         });

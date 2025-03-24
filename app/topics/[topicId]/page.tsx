@@ -2,6 +2,7 @@ import VideoPlayer from '@/components/videoPlayer';
 import Link from 'next/link';
 import { getTopicById } from '@/lib/topics.server';
 import BlockNoteWrapper from './components/BlockNoteWrapper';
+import { getUserProfile } from '@/lib/user';
 
 const chapters = [
 	{ time: 0, label: "Introduction" },
@@ -14,6 +15,7 @@ export default async function TopicDetailsPage({ params }: { params: Promise<{ t
 	try {
 		const topicId = (await params).topicId;
 		const topic = await getTopicById(topicId);
+		const currentUser = await getUserProfile();
 
 
 		return (
@@ -24,7 +26,7 @@ export default async function TopicDetailsPage({ params }: { params: Promise<{ t
 					<VideoPlayer videoUrl={topic.video_url} chapters={chapters} />
 				</div>
 
-				<BlockNoteWrapper topicId={topicId}/>
+				<BlockNoteWrapper topicId={topicId} userRole={currentUser?.role}/>
 
 				<div >
 					<Link href={'/topics'}>Topics</Link>
