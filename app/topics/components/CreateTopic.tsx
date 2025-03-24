@@ -1,5 +1,5 @@
 'use client'
-import RoleBasedView from "@/components/RoleBasedView";
+
 import { createTopic } from "@/lib/topics.client";
 import { useState } from "react";
 
@@ -36,17 +36,16 @@ export default function CreateTopic() {
     }
 
     return (
-        <RoleBasedView allowedRoles={['teacher']}>
-            <div>
-                <form>
-                    <input type="text" name="title" placeholder="Topic Title" value={formData.title} onChange={handleChange} />
-                    <input type="text" name="description" placeholder="Description" value={formData.description} onChange={handleChange} />
-                    <input type="text" name="video" placeholder="Video URL" value={formData.video} onChange={handleChange} />
-                    <button type="button" onClick={handleSumbit}>
-                        {isLoading ? 'Loading...' : 'Create'}
-                    </button>
-                </form>
-            </div>
-        </RoleBasedView>
+        <div>
+            <form>
+                <input type="text" name="title" placeholder="Topic Title" value={formData.title} onChange={handleChange} />
+                <input type="text" name="description" placeholder="Description" value={formData.description} onChange={handleChange} />
+                <input type="text" name="video" placeholder="Video URL" value={formData.video} onChange={handleChange} />
+                <button type="button" onClick={handleSumbit}>
+                    {isLoading ? 'Loading...' : 'Create'}
+                </button>
+            </form>
+        </div>
+            
     );
 }
