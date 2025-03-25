@@ -1,4 +1,3 @@
-import { profile } from "console";
 import { createClient } from "./supabase/server";
 
 export async function getUserProfile() {
