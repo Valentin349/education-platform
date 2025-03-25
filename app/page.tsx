@@ -1,5 +1,5 @@
-import TopicsPage from "./topics/page";
+import { redirect } from "next/navigation";
 
 export default function Home() {
-    return <TopicsPage />;
+    redirect('/topics');
 }

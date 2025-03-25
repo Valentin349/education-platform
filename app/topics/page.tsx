@@ -1,38 +1,27 @@
 import Link from 'next/link';
-import CreateTopic from './components/CreateTopic';
 import { getAllTopics } from '@/lib/topics.server';
-import Logout from '../(auth)/components/Logout';
-import { getUserProfile } from '@/lib/user';
+import { Card, CardContent } from '@/components/ui/card';
 
 export default async function TopicsPage() {
     try {
-        const { user, profile } = await getUserProfile();
         const topics = await getAllTopics();
-
 
         return (
             <div>
-                <h1>Topics</h1>
-                <h2>Hello {profile?.role ?? 'student'}</h2>
-                {user && (
-                    <Logout />
-                )}
-                
-                <div>
-                    {topics?.map((topic) => (
-                        <Link key={topic.id} href={`./topics/${topic.id}`} passHref>
-                            <div className='card'>
-                                <h2>{topic.title}</h2>
-                                <p>{topic.description}</p>
-                            </div>
+                <h1 className="text-2xl font-bold mb-4">Topics</h1>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {topics.map((course) => (
+                        <Link key={course.id} href={`./topics/${course.id}`} passHref>
+                            <Card className="p-4">
+                                <CardContent>
+                                    <h2 className="text-lg font-semibold">{course.title}</h2>
+                                    <p className="text-sm text-gray-600">{course.description}</p>
+                                </CardContent>
+                            </Card>
                         </Link>
+
                     ))}
                 </div>
-
-                {/*Teacher only Features*/}
-                {profile?.role === 'teacher' && (
-                    <CreateTopic />
-                )}
             </div>
         );
     } catch (error: any) {
