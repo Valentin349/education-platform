@@ -2,12 +2,11 @@
 import { useState } from "react";
 import AuthButton from "../components/AuthButton";
 import { login } from "../actions";
-import { useRouter } from "next/navigation";
+import { redirect } from "next/navigation";
 
 export default function LoginForm() {
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
-    const router = useRouter();
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -18,7 +17,7 @@ export default function LoginForm() {
         const result = await login(formData);
 
         if (result.status === 'success') {
-            router.push('/');
+            redirect('/');
         } else {
             setError(result.status);
         }
