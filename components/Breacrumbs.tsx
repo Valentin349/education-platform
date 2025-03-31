@@ -1,54 +1,72 @@
 'use client'
 import { usePathname } from "next/navigation";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "./ui/breadcrumb";
-import React, { Suspense, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
+import Link from "next/link";
+import { ChevronRight } from "lucide-react";
 
-function BreadcrumbsContent() {
-    const pathName = usePathname();
-    const pathSegments = pathName.split('/').filter(Boolean);
-    const [titles, setTitles] = useState<Record<string, string>>({});
-    const [hydrated, setHydrated] = useState(false);
+export default function DynamicBreadcrumbs() {
+    const pathname = usePathname()
+    const [pageTitle, setPageTitle] = useState<string>('')
+    const [pathSegments, setPathSegments] = useState<Array<{ name: string; path: string }>>([])
 
     useEffect(() => {
-        setHydrated(true);
+        const h1Element = document.querySelector('h1')
+        const h1Text = h1Element?.textContent || ''
+        setPageTitle(h1Text)
 
-        const h1Element = document.querySelector("h1");
-        if (h1Element) {
-            setTitles((prev) => ({
-                ...prev,
-                [pathSegments[pathSegments.length - 1]]: h1Element.textContent || "Unknown",
-            }));
-        }
-        
-    }, [pathName]);
+        // Create path segments for breadcrumb
+        const segments = pathname
+            .split('/')
+            .filter(Boolean)
+            .map((segment, index, array) => {
+                // Create path up to this segment
+                const path = '/' + array.slice(0, index + 1).join('/')
 
-    if (!hydrated) return null;
+                // Format the segment name (convert kebab-case to Title Case)
+                const formattedName = segment
+                    .split('-')
+                    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                    .join(' ')
+
+                return {
+                    name: formattedName,
+                    path
+                }
+            })
+
+        setPathSegments(segments)
+    }, [pathname])
+
+    if (pathSegments.length > 0 && pageTitle) {
+        pathSegments[pathSegments.length - 1].name = pageTitle
+    }
 
     return (
         <Breadcrumb>
             <BreadcrumbList>
-                {pathSegments.map((segment, index) => {
-                    const href = "/" + pathSegments.slice(0, index + 1).join("/");
-                    const title = hydrated ? titles[segment] || segment : segment;
+                <BreadcrumbItem>
+                    <BreadcrumbLink asChild>
+                        <Link href="/">
+                            <span>Home</span>
+                        </Link>
+                    </BreadcrumbLink>
+                </BreadcrumbItem>
 
-                    return (
-                        <React.Fragment key={href}>
-                            <BreadcrumbSeparator />
-                            <BreadcrumbItem >
-                                <BreadcrumbLink href={href}>{title}</BreadcrumbLink>
-                            </BreadcrumbItem>
-                        </React.Fragment>
-                    );
-                })}
+                {pathSegments.map((segment, index) => (
+                    <BreadcrumbItem key={segment.path}>
+                        <ChevronRight className="h-4 w-4 mx-2 flex-shrink-0 text-muted-foreground" aria-hidden="true" />
+
+                        {index === pathSegments.length - 1 ? (
+                            <BreadcrumbPage>{segment.name}</BreadcrumbPage>
+                        ) : (
+                            <BreadcrumbLink asChild>
+                                <Link href={segment.path}>{segment.name}</Link>
+                            </BreadcrumbLink>
+                        )}
+                    </BreadcrumbItem>
+                ))}
             </BreadcrumbList>
         </Breadcrumb>
-    );
-}
-
-export default function Breadcrumbs() {
-    return (
-        <Suspense fallback={null}>
-            <BreadcrumbsContent />
-        </Suspense>
     );
 }

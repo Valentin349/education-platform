@@ -1,4 +1,4 @@
-import BreadCrumbs from "@/components/Breacrumbs";
+import DynamicBreadcrumbs from "@/components/Breacrumbs";
 import { AppSidebar } from "@/components/sidebar/app-sidebar";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@radix-ui/react-separator";
@@ -13,7 +13,7 @@ export default function TopicsLayout({ children }: { children: React.ReactNode }
                         <div className="flex items-center gap-2 px-4">
                             <SidebarTrigger className="-ml-1" />
                             <Separator orientation="vertical" className="mr-2 h-4" />
-                            <BreadCrumbs/>
+                            <DynamicBreadcrumbs/>
                         </div>
                     </header>
                     <main className="flex p-6">{children}</main>
