@@ -13,7 +13,7 @@ const BlockNoteComponent = dynamic(
 
 export default function BlockNoteWrapper({ topicId, userRole }: BlockNoteWrapperProps) {
     return (
-        <div className="w-full max-w-3xl p-5">
+        <div>
             {userRole === 'teacher' ?
                 <BlockNoteComponent topicId={topicId} readonly={false} />:
                 <BlockNoteComponent topicId={topicId} readonly={true} />
